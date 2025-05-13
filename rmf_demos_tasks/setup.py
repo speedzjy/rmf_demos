@@ -35,6 +35,7 @@ setup(
           'dispatch_go_to_place = rmf_demos_tasks.dispatch_go_to_place:main',
           'mock_docker = rmf_demos_tasks.mock_docker:main',
           'teleop_robot = rmf_demos_tasks.teleop_robot:main',
+          'dms_communicator = rmf_demos_tasks.dms_communicator:main',
         ],
     },
 )
