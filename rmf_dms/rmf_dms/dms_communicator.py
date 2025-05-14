@@ -116,6 +116,7 @@ class TaskCommunicator(Node):
             destination = data.get("destination")
             robot = data.get("robot")
             fleet = data.get("fleet")
+            dms_cmd_id = data.get("dms_cmd_id", 0)
 
             if destination is None or robot is None or fleet is None:
                 return (
@@ -125,43 +126,137 @@ class TaskCommunicator(Node):
                     400,
                 )
 
-            print(
-                f"Received assignment: fleet: {fleet}, robot: {robot}, destination: {destination}"
-            )
+            self.get_logger().info(f"\033[92mReceived assignment\033[0m: {data}")
 
-            self.async_loop.create_task(self.task_tracker(robot, fleet, destination))
+            self.async_loop.create_task(
+                self.task_tracker(dms_cmd_id, robot, fleet, destination)
+            )
 
             return jsonify(
                 {
                     "status": "success",
                     "destination": destination,
                     "robot": robot,
+                    "fleet": fleet,
+                    "dms_cmd_id": dms_cmd_id,
                 }
             )
 
-    async def task_tracker(self, robot, fleet, destination):
+    async def task_tracker(self, dms_cmd_id, robot, fleet, destination):
+        self.get_logger().info(
+            f"[async \033[92m{robot}\033[0m] task \033[92mbegin\033[0m"
+        )
+
+        # 等待看是否有停车任务
+        self.get_logger().info(f"[async \033[92m{robot}\033[0m] Check parking task...")
+        await asyncio.sleep(1.0)
+        parking_task_id = await self.get_robot_task_id(robot, fleet)
+        if bool(parking_task_id):
+            self.get_logger().info(
+                f"[async \033[92m{robot}\033[0m] parking task id: {parking_task_id}"
+            )
+            await self.cancel_task(robot, parking_task_id)
+        else:
+            self.get_logger().info(
+                f"[async \033[92m{robot}\033[0m] parking task not found, no need to cancel"
+            )
+
+        request_id = await self.go_to_place(robot, fleet, destination)
+
+        await self.wait_for_task_completion_async(request_id, robot)
 
         self.get_logger().info(
-            f"Agent \033[92m{robot}\033[0m task \033[92mbegin\033[0m"
+            f"[async \033[92m{robot}\033[0m] task \033[92mend\033[0m"
         )
+
+        await asyncio.sleep(1.0)
+        await self.go_to_place(robot, fleet, f"{robot}_charger")
+
+    async def cancel_task(self, robot, task_id):
+        self.get_logger().info(f"[async \033[92m{robot}\033[0m] Cancel task: {task_id}")
 
         response = asyncio.Future()
 
         msg = ApiRequest()
-        msg.request_id = "direct_" + str(uuid.uuid4())
+        msg.request_id = "cancel_task_" + str(uuid.uuid4())
         payload = {}
+        payload["type"] = "cancel_task_request"
+        payload["task_id"] = task_id
 
-        self.get_logger().info("Using 'robot_task_request'")
+        msg.json_msg = json.dumps(payload)
+        self.get_logger().info(
+            f"[async \033[92m{robot}\033[0m] cancel task msg: \n{json.dumps(payload, indent=2)}"
+        )
+        self.pub_req.publish(msg)
+
+        while not response.done():
+            with self.request_id_lock:
+                if msg.request_id in self.request_responses:
+                    response.set_result(
+                        json.loads(self.request_responses[msg.request_id])
+                    )
+                    self.request_responses.pop(msg.request_id)
+                    self.get_logger().info(
+                        f"[async \033[92m{robot}\033[0m] Got response:\n{response.result()}"
+                    )
+                    break
+            await asyncio.sleep(0.3)
+
+        self.get_logger().info(
+            f"[async \033[92m{robot}\033[0m] Cancel task \033[92mreceived\033[0m"
+        )
+
+    async def get_robot_task_id(self, robot, fleet):
+        url = f"http://localhost:8000/fleets/{fleet}/state"
+
+        async with aiohttp.ClientSession() as session:
+            while True:
+                try:
+                    async with session.get(url) as response:
+                        if response.status == 200:
+                            data = await response.json()
+                            parking_task_id = parking_task_id = (
+                                data.get("robots", None)
+                                .get(robot, None)
+                                .get("task_id", "")
+                            )
+
+                            break
+                        else:
+                            self.get_logger().info(
+                                f"[async \033[92m{robot}\033[0m] Got unexpected status code \033[91m{response.status}\033[0m, retrying..."
+                            )
+                except aiohttp.ClientConnectorError:
+                    self.get_logger().info(
+                        "[async \033[92m{robot}\033[0m] Connection error (endpoint not ready yet), retrying..."
+                    )
+
+                await asyncio.sleep(1.0)
+
+        return parking_task_id
+
+    async def go_to_place(self, robot, fleet, destination, orientation=0):
+        self.get_logger().info(
+            f"[async \033[92m{robot}\033[0m] Send task: \033[92m{robot}\033[0m go to \033[92m{destination}\033[0m"
+        )
+        response = asyncio.Future()
+
+        msg = ApiRequest()
+        msg.request_id = "direct_" + str(uuid.uuid4())
+
+        payload = {}
         payload["type"] = "robot_task_request"
         payload["robot"] = robot
         payload["fleet"] = fleet
 
         # Define task request description
-        go_to_description = {"waypoint": destination}
-        if self.args.orientation is not None:
-            go_to_description["orientation"] = self.args.orientation * math.pi / 180.0
-
-        go_to_activity = {"category": "go_to_place", "description": go_to_description}
+        go_to_activity = {
+            "category": "go_to_place",
+            "description": {
+                "waypoint": destination,
+                "orientation": orientation * math.pi / 180.0,
+            },
+        }
 
         rmf_task_request = {
             "category": "compose",
@@ -176,7 +271,9 @@ class TaskCommunicator(Node):
 
         msg.json_msg = json.dumps(payload)
 
-        print(f"Json msg payload: \n{json.dumps(payload, indent=2)}")
+        self.get_logger().info(
+            f"[async \033[92m{robot}\033[0m] Json msg payload: \n{json.dumps(payload, indent=2)}"
+        )
 
         self.pub_req.publish(msg)
 
@@ -187,20 +284,24 @@ class TaskCommunicator(Node):
                         json.loads(self.request_responses[msg.request_id])
                     )
                     self.request_responses.pop(msg.request_id)
-                    print(f"Got response:\n{response.result()}")
+                    self.get_logger().info(
+                        f"[async \033[92m{robot}\033[0m] Got response:\n{response.result()}"
+                    )
                     break
             await asyncio.sleep(0.3)
 
-        await self.wait_for_task_completion_async(msg.request_id, robot)
+        self.get_logger().info(
+            f"[async \033[92m{robot}\033[0m] Send task: \033[92m{robot}\033[0m go to \033[92m{destination} \033[92mreceived\033[0m"
+        )
 
-        self.get_logger().info(f"Agent \033[33m{robot}\033[0m task \033[33mend\033[0m")
+        return msg.request_id
 
     async def wait_for_task_completion_async(
         self, request_id, robot, poll_interval=1.0
     ):
         url = f"http://localhost:8000/tasks/{request_id}/state"
-        print(
-            f"[async \033[33m{robot}\033[0m] Waiting for task {request_id} to complete..."
+        self.get_logger().info(
+            f"[async \033[92m{robot}\033[0m] Waiting for task {request_id} to complete..."
         )
 
         async with aiohttp.ClientSession() as session:
@@ -210,22 +311,19 @@ class TaskCommunicator(Node):
                         if response.status == 200:
                             data = await response.json()
                             status = data.get("status")
-                            print(
-                                f"[async \033[33m{robot}\033[0m] Task status: {status}"
-                            )
 
                             if status == "completed":
-                                print(
-                                    f"[async \033[33m{robot}\033[0m] Task {request_id} is completed."
+                                self.get_logger().info(
+                                    f"[async \033[92m{robot}\033[0m] Task {request_id} is completed."
                                 )
                                 break
                         else:
-                            print(
-                                f"[async \033[33m{robot}\033[0m] Got unexpected status code \033[91m{response.status}\033[0m, retrying..."
+                            self.get_logger().info(
+                                f"[async \033[92m{robot}\033[0m] Got unexpected status code \033[91m{response.status}\033[0m, retrying..."
                             )
                 except aiohttp.ClientConnectorError:
-                    print(
-                        "[async \033[33m{robot}\033[0m] Connection error (endpoint not ready yet), retrying..."
+                    self.get_logger().info(
+                        "[async \033[92m{robot}\033[0m] Connection error (endpoint not ready yet), retrying..."
                     )
 
                 await asyncio.sleep(poll_interval)

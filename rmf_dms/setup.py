@@ -20,6 +20,7 @@ setup(
     entry_points={
         "console_scripts": [
             "dms_communicator = rmf_dms.dms_communicator:main",
+            "fake_dms = rmf_dms.fake_dms:main",
         ],
     },
 )
