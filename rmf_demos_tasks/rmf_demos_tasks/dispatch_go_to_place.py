@@ -93,7 +93,6 @@ class TaskRequester(Node):
 
         # Set task request start time
         now = self.get_clock().now().to_msg()
-        print(f"Current time: {now.sec}.{now.nanosec}")
         now.sec = now.sec + self.args.start_time
         start_time = now.sec * 1000 + round(now.nanosec/10**6)
         # todo(YV): Fill priority after schema is added

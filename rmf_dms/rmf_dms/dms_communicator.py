@@ -23,6 +23,8 @@ import math
 import logging
 import threading
 import time
+import requests
+import aiohttp
 
 from flask import Flask, request, make_response, jsonify
 from collections import defaultdict
@@ -140,7 +142,7 @@ class TaskCommunicator(Node):
     async def task_tracker(self, robot, fleet, destination):
 
         self.get_logger().info(
-            f"Agent \033[32m{robot}\033[0m task \033[32mbegin\033[0m"
+            f"Agent \033[92m{robot}\033[0m task \033[92mbegin\033[0m"
         )
 
         response = asyncio.Future()
@@ -187,9 +189,46 @@ class TaskCommunicator(Node):
                     self.request_responses.pop(msg.request_id)
                     print(f"Got response:\n{response.result()}")
                     break
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.3)
+
+        await self.wait_for_task_completion_async(msg.request_id, robot)
 
         self.get_logger().info(f"Agent \033[33m{robot}\033[0m task \033[33mend\033[0m")
+
+    async def wait_for_task_completion_async(
+        self, request_id, robot, poll_interval=1.0
+    ):
+        url = f"http://localhost:8000/tasks/{request_id}/state"
+        print(
+            f"[async \033[33m{robot}\033[0m] Waiting for task {request_id} to complete..."
+        )
+
+        async with aiohttp.ClientSession() as session:
+            while True:
+                try:
+                    async with session.get(url) as response:
+                        if response.status == 200:
+                            data = await response.json()
+                            status = data.get("status")
+                            print(
+                                f"[async \033[33m{robot}\033[0m] Task status: {status}"
+                            )
+
+                            if status == "completed":
+                                print(
+                                    f"[async \033[33m{robot}\033[0m] Task {request_id} is completed."
+                                )
+                                break
+                        else:
+                            print(
+                                f"[async \033[33m{robot}\033[0m] Got unexpected status code \033[91m{response.status}\033[0m, retrying..."
+                            )
+                except aiohttp.ClientConnectorError:
+                    print(
+                        "[async \033[33m{robot}\033[0m] Connection error (endpoint not ready yet), retrying..."
+                    )
+
+                await asyncio.sleep(poll_interval)
 
     def tracker_loop(self):
         asyncio.set_event_loop(self.async_loop)
@@ -227,7 +266,6 @@ def main(argv=sys.argv):
 
     executor = MultiThreadedExecutor()
     executor.add_node(task_requester)
-
     executor.spin()
 
     rclpy.shutdown()
