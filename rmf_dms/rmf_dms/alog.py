@@ -48,6 +48,12 @@ class AsyncLog(object):
     def info(self, message):
         self.logger.info(message)
 
+    def debug(self, message):
+        self.logger.debug(message)
+
+    def error(self, message):
+        self.logger.error(message)
+
     def info_green(self, message):
         self.logger.info(Fore.GREEN + message + Style.RESET_ALL)
 

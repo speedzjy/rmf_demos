@@ -1,4 +1,17 @@
 from datetime import datetime, timedelta
+from pydantic import BaseModel
+
+
+class BottleInfo(BaseModel):
+    bottleCode: str
+
+
+class WorkstationStatusUpdate(BaseModel):
+    workstationType: str
+    name: str
+    code: str
+    status: str
+    bottleList: list[BottleInfo]
 
 
 class Workstation:
