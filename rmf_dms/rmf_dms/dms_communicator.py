@@ -106,10 +106,6 @@ class TaskCommunicator(Node):
                 )
 
     def setup_routes(self):
-        @self.app.route("/", methods=["GET"])
-        def hello():
-            return "Hello, World!"
-
         @self.app.route("/assign", methods=["POST"])
         def assign():
             data = request.get_json()
