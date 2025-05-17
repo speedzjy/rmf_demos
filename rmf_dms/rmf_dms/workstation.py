@@ -1,3 +1,5 @@
+import threading
+
 from datetime import datetime, timedelta
 from pydantic import BaseModel
 
@@ -15,7 +17,14 @@ class WorkstationStatusUpdate(BaseModel):
 
 
 class Workstation:
-    def __init__(self, name: str, capacity: int, bottle_set: set = set()):
+    def __init__(
+        self,
+        name: str,
+        capacity: int,
+        bottle_set: set = set(),
+        heartbeat_url: str = "localhost:6060/heartbeat",
+        heartbeat_interval: float = 3,
+    ):
         self.name = name
         self.capacity = capacity
         self._task_records = {}  # dms_cmd_id: (start_time, duration)
@@ -73,3 +82,14 @@ class Workstation:
 
     def get_bottle_list(self):
         return list(self.bottle_set)  # 如果你还需要展示为列表
+    
+    def run_heartbeat(self):
+        """
+        模拟心跳包发送
+        """
+        # 这里可以添加实际的心跳包发送逻辑
+        pass
+    
+    def run(self):
+        self.thread_heartbeat = threading.Thread(target=self.run_heartbeat, daemon=True)
+        self.thread_heartbeat.start()
