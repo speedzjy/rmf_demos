@@ -37,7 +37,7 @@ from flask import Flask, request, make_response, jsonify
 from collections import defaultdict
 
 from .alog import AsyncLog
-from .workstation import WorkstationStatusUpdate
+from .workstation import WorkstationStatusUpdate, Workstation
 
 database_file = "dms.db"
 
@@ -60,7 +60,12 @@ class FakeDms:
         # ---------------------------------------------------------
 
         # ----------------------临时内存数据-------------------------
-        self.workstation_status = defaultdict(WorkstationStatusUpdate)
+        self.workstation_status = defaultdict(
+            WorkstationStatusUpdate
+        )  # 包括工作站和机器人
+
+        # 只包括工作站
+        self.ws_instance_dict = defaultdict(Workstation)
         # ----------------------------------------------------------
 
         self.exit_event = threading.Event()
@@ -78,7 +83,7 @@ class FakeDms:
                     name TEXT NOT NULL,
                     code TEXT NOT NULL PRIMARY KEY,
                     status TEXT NOT NULL,
-                    bottleList TEXT NOT NULL
+                    capacity INTEGER NOT NULL DEFAULT 10
                 )
             """
             )
@@ -126,35 +131,24 @@ class FakeDms:
                 if ws_status_to_update:
                     # SQL 语句：如果 code 存在则替换整行，否则插入
                     sql = """
-                        INSERT OR REPLACE INTO workstation_tb (workstationType, name, code, status, bottleList)
+                        INSERT OR REPLACE INTO workstation_tb (workstationType, name, code, status, capacity)
                         VALUES (?, ?, ?, ?, ?)
                     """
 
                     data_to_insert = []
                     for ws_status in ws_status_to_update:
                         try:
-                            # 将 bottleList (Pydantic 对象列表) 序列化为 JSON 字符串
-                            # Pydantic v2+ 使用 model_dump_json()，v1 使用 json()
-                            # 对于 list[BaseModel] 的情况，需要特殊处理或确保模型本身可序列化
-                            # 最稳妥的是手动转换为字典列表再dumps
-                            bottlelist_data = [
-                                bottle.dict() for bottle in ws_status.bottleList
-                            ]
-                            bottlelist_json_str = json.dumps(bottlelist_data)
-
                             data_to_insert.append(
                                 (
                                     ws_status.workstationType,
                                     ws_status.name,
                                     ws_status.code,
                                     ws_status.status,
-                                    bottlelist_json_str,
+                                    ws_status.capacity,
                                 )
                             )
                         except Exception as e:
-                            self.logger.error(
-                                f"Error serializing bottleList for {ws_status.code}: {e}"
-                            )
+                            self.logger.error(f"Error insert for {ws_status.code}: {e}")
                             continue  # 跳过当前循环，处理下一条数据
 
                     if data_to_insert:
@@ -178,12 +172,25 @@ class FakeDms:
                 if conn:
                     conn.close()
 
-            self.exit_event.wait(1.0)
+            time.sleep(1.0)
 
     def run_fake_ws(self):
+        ws_code_list = ["liquid_1", "solid_1", "powder_1"]
+        for ws_code in ws_code_list:
+            ws = Workstation(
+                workstation_type=ws_code.split("_")[0],
+                name=ws_code,
+                code=ws_code,
+                event=self.exit_event,
+                logger=self.logger,
+            )
+            self.ws_instance_dict[ws_code] = ws
         # 模拟工作站状态更新
         while not self.exit_event.is_set():
             self.exit_event.wait(3.0)
+
+    def run_fake_robot(self):
+        pass
 
     def run(self):
         self.thread_connect_dms = threading.Thread(target=self.run_fastapi, daemon=True)
@@ -195,13 +202,16 @@ class FakeDms:
         self.thread_fake_ws = threading.Thread(target=self.run_fake_ws)
         self.thread_fake_ws.start()
 
+        self.thread_fake_robot = threading.Thread(target=self.run_fake_robot)
+        self.thread_fake_robot.start()
+
         def _signal_handler(sig, frame):
             print("\n")
             self.exit_event.set()
 
         signal.signal(signal.SIGINT, _signal_handler)
         while not self.exit_event.is_set():
-            self.exit_event.wait(0.5)
+            time.sleep(0.5)
         self.logger.info("Program terminated.")
 
 
