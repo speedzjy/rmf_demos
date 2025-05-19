@@ -21,6 +21,7 @@ setup(
         "console_scripts": [
             "dms_communicator = rmf_dms.dms_communicator:main",
             "fake_dms = rmf_dms.fake_dms:main",
+            "debug_preparing = rmf_dms.debug_preparing:main",
         ],
     },
 )

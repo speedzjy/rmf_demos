@@ -31,13 +31,12 @@ import uvicorn
 import sqlite3
 
 from fastapi import FastAPI, File, UploadFile
-
-
-from flask import Flask, request, make_response, jsonify
 from collections import defaultdict
+from pprint import pprint
 
 from .alog import AsyncLog
 from .workstation import WorkstationStatusUpdate, Workstation
+from .db_handler import DBHandler
 
 database_file = "dms.db"
 
@@ -51,7 +50,10 @@ class FakeDms:
         # --------------------数据库设置--------------------------
         script_dir = os.path.dirname(os.path.abspath(__file__))
         self.db_name = os.path.join(script_dir, database_file)
-        self.init_db()
+        
+        self.db_handler_main = DBHandler(self.db_name, self.logger)
+        self.db_handler_main.init_db()
+        self.db_handler_main.init_bottle_tb()
         # -------------------------------------------------------
 
         # --------------------FastAPI后端--------------------------
@@ -68,40 +70,12 @@ class FakeDms:
         self.ws_instance_dict = defaultdict(Workstation)
         # ----------------------------------------------------------
 
+        self.db_lock = threading.Lock()
         self.exit_event = threading.Event()
 
-    def init_db(self):
-        """初始化数据库，创建表（如果不存在）"""
-        conn = None
-        try:
-            conn = sqlite3.connect(self.db_name)
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS workstation_tb (
-                    workstationType TEXT NOT NULL,
-                    name TEXT NOT NULL,
-                    code TEXT NOT NULL PRIMARY KEY,
-                    status TEXT NOT NULL,
-                    capacity INTEGER NOT NULL DEFAULT 10
-                )
-            """
-            )
-            conn.commit()
-            self.logger.info(f"Database '{self.db_name}' initialized.")
-        except sqlite3.Error as e:
-            self.logger.error(f"Error initializing database: {e}")
-        finally:
-            if conn:
-                conn.close()
-
     def setup_routes(self):
-        @self.app.get("/")
-        async def hello():
-            return "Hello, World!"
-
         @self.app.post("/heartbeat")
-        async def heartbeat(ws_status: WorkstationStatusUpdate):
+        async def ws_heartbeat(ws_status: WorkstationStatusUpdate):
             self.workstation_status[ws_status.code] = ws_status
             return {"status": "ok", "message": f"Status for {ws_status.code} updated."}
 
@@ -175,22 +149,85 @@ class FakeDms:
             time.sleep(1.0)
 
     def run_fake_ws(self):
-        ws_code_list = ["liquid_1", "solid_1", "powder_1"]
-        for ws_code in ws_code_list:
+        ws_code_list = [
+            {"ws_type": "liquid", "ws_code": "liquid_1"},
+            {"ws_type": "solid", "ws_code": "solid_1"},
+            {"ws_type": "powder", "ws_code": "powder_1"},
+            {"ws_type": "starting_station", "ws_code": "starting_station"},
+        ]
+
+        for ws_info in ws_code_list:
             ws = Workstation(
-                workstation_type=ws_code.split("_")[0],
-                name=ws_code,
-                code=ws_code,
+                workstation_type=ws_info["ws_type"],
+                name=ws_info["ws_code"],
+                code=ws_info["ws_code"],
                 event=self.exit_event,
                 logger=self.logger,
             )
-            self.ws_instance_dict[ws_code] = ws
+            self.ws_instance_dict[ws_info["ws_code"]] = ws
         # 模拟工作站状态更新
         while not self.exit_event.is_set():
             self.exit_event.wait(3.0)
 
-    def run_fake_robot(self):
-        pass
+    def robot_heartbeat(self):
+        while not self.exit_event.is_set():
+            time.sleep(1.0)
+
+            try:
+                response = requests.get("http://localhost:8000/fleets")
+                if response.status_code == 200:
+                    data = response.json()
+
+                    for fleet in data:
+                        for robot_name, robot_info in fleet["robots"].items():
+                            robot_status = WorkstationStatusUpdate(
+                                workstationType="robot",
+                                name=robot_name,
+                                code=robot_name,
+                                status=robot_info["status"],
+                                capacity=80,
+                            )
+                            self.workstation_status[robot_name] = robot_status
+                else:
+                    self.logger.info(
+                        f"GET /fleet failed with status code {response.status_code}"
+                    )
+            except requests.RequestException as e:
+                self.logger.info(f"Error during GET /fleet: {e}")
+
+    def run_scheduler(self):
+        self.logger.info("Scheduler is running...")
+        db_handler_scheduler = DBHandler(self.db_name, self.logger)
+
+        while not self.exit_event.is_set():
+            time.sleep(1.0)
+
+            # 组装json
+            dms_status = {
+                "workstation_list": [],
+                "bottle_execute_record_list": [],
+                "robot_list": [],
+                "task_list": [],
+            }
+            
+            pprint(db_handler_scheduler.fecth_ws_info())
+
+            try:
+                response = requests.post(
+                    "http://localhost:5050/scheduling",
+                    json=dms_status,
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    self.logger.info(f"Scheduler data: {data}")
+                else:
+                    self.logger.info(
+                        f"GET /scheduler failed with status code {response.status_code}"
+                    )
+            except requests.RequestException as e:
+                self.logger.info(f"Error during Post /scheduler: {e}")
+        
+        db_handler_scheduler.close()
 
     def run(self):
         self.thread_connect_dms = threading.Thread(target=self.run_fastapi, daemon=True)
@@ -202,8 +239,11 @@ class FakeDms:
         self.thread_fake_ws = threading.Thread(target=self.run_fake_ws)
         self.thread_fake_ws.start()
 
-        self.thread_fake_robot = threading.Thread(target=self.run_fake_robot)
+        self.thread_fake_robot = threading.Thread(target=self.robot_heartbeat)
         self.thread_fake_robot.start()
+
+        self.thread_scheduler = threading.Thread(target=self.run_scheduler, daemon=True)
+        self.thread_scheduler.start()
 
         def _signal_handler(sig, frame):
             print("\n")
@@ -212,6 +252,8 @@ class FakeDms:
         signal.signal(signal.SIGINT, _signal_handler)
         while not self.exit_event.is_set():
             time.sleep(0.5)
+        
+        self.db_handler_main.close()
         self.logger.info("Program terminated.")
 
 

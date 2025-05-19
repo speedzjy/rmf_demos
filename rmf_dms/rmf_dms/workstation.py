@@ -62,8 +62,8 @@ class Workstation:
         动态计算工作站状态：若有未完成任务则为 BUSY, 否则为 IDLE。
         """
         if all(record["status"] == "finish" for record in self._task_records.values()):
-            return "IDLE"
-        return "BUSY"
+            return "idle"
+        return "busy"
 
     def _monitor_tasks(self):
         """
@@ -82,7 +82,7 @@ class Workstation:
         while not self.exit_event.is_set():
             time.sleep(self.heartbeat_interval)
 
-            self.logger.info(f"Heartbeat from {self.code}: {self.status}")
+            # self.logger.info(f"Heartbeat from {self.code}: {self.status}")
 
             data = WorkstationStatusUpdate(
                 workstationType=self.workstation_type,
