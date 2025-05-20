@@ -13,7 +13,3 @@ class Task(BaseModel):
     vials_count: str
     steps: list
     level: int  # 无效参数
-
-
-class TaskUpdate(BaseModel):
-    tasks: list[Task]

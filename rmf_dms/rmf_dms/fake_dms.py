@@ -36,7 +36,7 @@ from pprint import pprint
 
 from .alog import AsyncLog
 from .workstation import WorkstationStatusUpdate, Workstation
-from .task import TaskUpdate
+from .task import Task
 from .db_handler import DBHandler
 
 database_file = "dms.db"
@@ -51,7 +51,7 @@ class FakeDms:
         # --------------------数据库设置--------------------------
         script_dir = os.path.dirname(os.path.abspath(__file__))
         self.db_name = os.path.join(script_dir, database_file)
-        
+
         self.db_handler_main = DBHandler(self.db_name, self.logger)
         self.db_handler_main.init_db()
         self.db_handler_main.init_bottle_tb()
@@ -63,6 +63,8 @@ class FakeDms:
         # ---------------------------------------------------------
 
         # ----------------------临时内存数据-------------------------
+        self.task_status = defaultdict(defaultdict)
+
         self.workstation_status = defaultdict(
             WorkstationStatusUpdate
         )  # 包括工作站和机器人
@@ -79,12 +81,13 @@ class FakeDms:
         async def ws_heartbeat(ws_status: WorkstationStatusUpdate):
             self.workstation_status[ws_status.code] = ws_status
             return {"status": "ok", "message": f"Status for {ws_status.code} updated."}
-        
+
         @self.app.post("/tasks")
-        async def tasks(tasks: TaskUpdate):
-            pass
-            # self.workstation_status[ws_status.code] = ws_status
-            # return {"status": "ok", "message": f"Status for {ws_status.code} updated."}
+        async def tasks(tasks_info: list[Task]):
+            for task in tasks_info:
+                if task.name not in self.task_status:
+                    self.task_status[task.name] = {"task": task, "finished": 0}
+            return {"status": "ok", "message": "Tasks updated."}
 
     def run_fastapi(self, port=6060):
         print(f"\n\033[92mStart: FastAPI app is starting on port: {port}\033[\n")
@@ -104,10 +107,10 @@ class FakeDms:
             try:
                 conn = sqlite3.connect(self.db_name)
                 cursor = conn.cursor()
-
+                
+                # --------------------------------update ws-------------------------------------------------
                 # 为了安全地遍历字典（防止在遍历时被 heartbeart 并发修改导致 RuntimeError），复制一份字典的值来进行迭代。
                 ws_status_to_update = list(self.workstation_status.values())
-
                 # 只有当字典中有数据时才进行更新
                 if ws_status_to_update:
                     # SQL 语句：如果 code 存在则替换整行，否则插入
@@ -142,6 +145,11 @@ class FakeDms:
                         )
                     else:
                         self.logger.debug("No valid workstation statuses to update.")
+                # --------------------------------------------------------------------------------
+                
+                # --------------------------------update task-----------------------------------
+                task_to_update = list(self.task_status.values())
+                # --------------------------------------------------------------------------------
 
             except sqlite3.Error as e:
                 self.logger.error(f"Error updating database: {e}")
@@ -216,7 +224,7 @@ class FakeDms:
                 "robot_list": db_handler_scheduler.fetch_robot_info(),
                 "task_list": [],
             }
-            
+
             pprint(dms_status)
 
             try:
@@ -233,7 +241,7 @@ class FakeDms:
                     )
             except requests.RequestException as e:
                 self.logger.info(f"Error during Post /scheduler: {e}")
-        
+
         db_handler_scheduler.close()
 
     def run(self):
@@ -259,7 +267,7 @@ class FakeDms:
         signal.signal(signal.SIGINT, _signal_handler)
         while not self.exit_event.is_set():
             time.sleep(0.5)
-        
+
         self.db_handler_main.close()
         self.logger.info("Program terminated.")
 
