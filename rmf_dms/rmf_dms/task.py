@@ -1,0 +1,19 @@
+import threading
+import time
+import requests
+
+from datetime import datetime, timedelta
+from pydantic import BaseModel
+
+
+class Task(BaseModel):
+    name: str
+    stamp: str
+    expr_no: str
+    vials_count: str
+    steps: list
+    level: int  # 无效参数
+
+
+class TaskUpdate(BaseModel):
+    tasks: list[Task]

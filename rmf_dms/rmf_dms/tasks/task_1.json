@@ -1,0 +1,155 @@
+[
+    {
+        "name": "电化学流程-1",
+        "stamp": "1970-01-20T23:39:15.345+00:00",
+        "level": 3,
+        "steps": [
+            {
+                "id": 5823481307201536,
+                "index": 1,
+                "workstation": "starting_station",
+                "detail": [
+                    {
+                        "material": null,
+                        "concentration": null,
+                        "value": null,
+                        "vials_no": "1",
+                        "actual_no": "",
+                        "material_code": null,
+                        "concentration_unit_code": null
+                    }
+                ],
+                "time": null,
+                "parameters": [
+                    {
+                        "machineTypeCode": "starting_station",
+                        "param": {
+                            "bottle_appoint": "0",
+                            "bottle_count": "1",
+                            "bottle_mapping_list": ""
+                        }
+                    }
+                ],
+                "condition": null,
+                "status": 1,
+                "branch_code": 0
+            },
+            {
+                "id": 5823481307267072,
+                "index": 2,
+                "workstation": "confecting_workstation",
+                "detail": [
+                    {
+                        "material": null,
+                        "concentration": null,
+                        "value": null,
+                        "vials_no": "1",
+                        "actual_no": "",
+                        "material_code": null,
+                        "concentration_unit_code": null
+                    }
+                ],
+                "time": null,
+                "parameters": [
+                    {
+                        "machineTypeCode": "confecting_workstation",
+                        "param": {
+                            "others": "演示-ustc"
+                        }
+                    }
+                ],
+                "condition": null,
+                "status": 0,
+                "branch_code": 0
+            },
+            {
+                "id": 5823481307267073,
+                "index": 3,
+                "workstation": "spotting_workstation",
+                "detail": [
+                    {
+                        "material": null,
+                        "concentration": null,
+                        "value": null,
+                        "vials_no": "1",
+                        "actual_no": "",
+                        "material_code": null,
+                        "concentration_unit_code": null
+                    }
+                ],
+                "time": null,
+                "parameters": [
+                    {
+                        "machineTypeCode": "spotting_workstation",
+                        "param": {
+                            "others": "Predefined00"
+                        }
+                    }
+                ],
+                "condition": null,
+                "status": 0,
+                "branch_code": 0
+            },
+            {
+                "id": 5823481307234305,
+                "index": 4,
+                "workstation": "furnace_workstation",
+                "detail": [
+                    {
+                        "material": null,
+                        "concentration": null,
+                        "value": null,
+                        "vials_no": "1",
+                        "actual_no": "",
+                        "material_code": null,
+                        "concentration_unit_code": null
+                    }
+                ],
+                "time": null,
+                "parameters": [
+                    {
+                        "machineTypeCode": "furnace_workstation",
+                        "param": {
+                            "others": "ustc-test"
+                        }
+                    }
+                ],
+                "condition": null,
+                "status": 0,
+                "branch_code": 0
+            },
+            {
+                "id": 5823481307234304,
+                "index": 5,
+                "workstation": "starting_station",
+                "detail": [
+                    {
+                        "material": null,
+                        "concentration": null,
+                        "value": null,
+                        "vials_no": "1",
+                        "actual_no": "",
+                        "material_code": null,
+                        "concentration_unit_code": null
+                    }
+                ],
+                "time": null,
+                "parameters": [
+                    {
+                        "machineTypeCode": "starting_station",
+                        "param": {
+                            "bottle_appoint": "0",
+                            "bottle_count": "1",
+                            "bottle_mapping_list": ""
+                        }
+                    }
+                ],
+                "condition": null,
+                "status": 0,
+                "branch_code": 0
+            }
+        ],
+        "expr_no": "STC202409192215453300",
+        "vials_count": 1
+    }
+]

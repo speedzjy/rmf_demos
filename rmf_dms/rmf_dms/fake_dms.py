@@ -36,6 +36,7 @@ from pprint import pprint
 
 from .alog import AsyncLog
 from .workstation import WorkstationStatusUpdate, Workstation
+from .task import TaskUpdate
 from .db_handler import DBHandler
 
 database_file = "dms.db"
@@ -78,6 +79,12 @@ class FakeDms:
         async def ws_heartbeat(ws_status: WorkstationStatusUpdate):
             self.workstation_status[ws_status.code] = ws_status
             return {"status": "ok", "message": f"Status for {ws_status.code} updated."}
+        
+        @self.app.post("/tasks")
+        async def tasks(tasks: TaskUpdate):
+            pass
+            # self.workstation_status[ws_status.code] = ws_status
+            # return {"status": "ok", "message": f"Status for {ws_status.code} updated."}
 
     def run_fastapi(self, port=6060):
         print(f"\n\033[92mStart: FastAPI app is starting on port: {port}\033[\n")
@@ -184,7 +191,7 @@ class FakeDms:
                                 workstationType="robot",
                                 name=robot_name,
                                 code=robot_name,
-                                status=robot_info["status"],
+                                status=robot_info["status"].upper(),
                                 capacity=80,
                             )
                             self.workstation_status[robot_name] = robot_status
@@ -204,13 +211,13 @@ class FakeDms:
 
             # 组装json
             dms_status = {
-                "workstation_list": [],
+                "workstation_list": db_handler_scheduler.fetch_ws_info(),
                 "bottle_execute_record_list": [],
-                "robot_list": [],
+                "robot_list": db_handler_scheduler.fetch_robot_info(),
                 "task_list": [],
             }
             
-            pprint(db_handler_scheduler.fecth_ws_info())
+            pprint(dms_status)
 
             try:
                 response = requests.post(

@@ -1,6 +1,103 @@
 {
-    "workstation_list": [],
+    "workstation_list": [
+        {
+            "workstationType": "robot",
+            "name": "tinyRobot1",
+            "code": "tinyRobot1",
+            "status": "IDLE",
+            "bottleSlotCount": 80,
+            "bottleList": []
+        },
+        {
+            "workstationType": "robot",
+            "name": "tinyRobot2",
+            "code": "tinyRobot2",
+            "status": "IDLE",
+            "bottleSlotCount": 80,
+            "bottleList": []
+        },
+        {
+            "workstationType": "liquid",
+            "name": "liquid_1",
+            "code": "liquid_1",
+            "status": "IDLE",
+            "bottleSlotCount": 10,
+            "bottleList": []
+        },
+        {
+            "workstationType": "solid",
+            "name": "solid_1",
+            "code": "solid_1",
+            "status": "IDLE",
+            "bottleSlotCount": 10,
+            "bottleList": []
+        },
+        {
+            "workstationType": "starting_station",
+            "name": "starting_station",
+            "code": "starting_station",
+            "status": "IDLE",
+            "bottleSlotCount": 10,
+            "bottleList": [
+                {
+                    "bottleCode": "bottle-1"
+                },
+                {
+                    "bottleCode": "bottle-2"
+                },
+                {
+                    "bottleCode": "bottle-3"
+                },
+                {
+                    "bottleCode": "bottle-4"
+                },
+                {
+                    "bottleCode": "bottle-5"
+                },
+                {
+                    "bottleCode": "bottle-6"
+                },
+                {
+                    "bottleCode": "bottle-7"
+                },
+                {
+                    "bottleCode": "bottle-8"
+                },
+                {
+                    "bottleCode": "bottle-9"
+                },
+                {
+                    "bottleCode": "bottle-10"
+                }
+            ]
+        },
+        {
+            "workstationType": "powder",
+            "name": "powder_1",
+            "code": "powder_1",
+            "status": "IDLE",
+            "bottleSlotCount": 10,
+            "bottleList": []
+        }
+    ],
     "bottle_execute_record_list": [],
-    "robot_list": [],
+    "robot_list": [
+        {
+            "workstationType": "robot",
+            "name": "tinyRobot1",
+            "code": "tinyRobot1",
+            "status": "IDLE",
+            "bottleSlotCount": 80,
+            "bottleList": []
+        },
+        {
+            "workstationType": "robot",
+            "name": "tinyRobot2",
+            "code": "tinyRobot2",
+            "status": "IDLE",
+            "bottleSlotCount": 80,
+            "bottleList": []
+        }
+    ],
     "task_list": []
 }

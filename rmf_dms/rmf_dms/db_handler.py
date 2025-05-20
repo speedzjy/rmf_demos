@@ -31,6 +31,7 @@ class DBHandler:
                 CREATE TABLE IF NOT EXISTS bottle_location_tb (
                     bottleCode TEXT NOT NULL PRIMARY KEY,
                     location TEXT NOT NULL,
+                    is_used BOOLEAN NOT NULL DEFAULT 0,
                     lastUpdated DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
                 """
@@ -59,18 +60,20 @@ class DBHandler:
                 """
             )
 
-            # cursor.execute(
-            #     """
-            #     CREATE TABLE IF NOT EXISTS task_tb (
-            #         taskId TEXT NOT NULL PRIMARY KEY,
-            #         taskType TEXT NOT NULL,
-            #         status TEXT NOT NULL,
-            #         assignedTo TEXT,
-            #         createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            #         updatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-            #     )
-            #     """
-            # )
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS task_tb (
+                    name TEXT NOT NULL,
+                    expr_no TEXT NOT NULL PRIMARY KEY,
+                    stamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    vials_count INTEGER NOT NULL,
+                    steps INTEGER NOT NULL,
+                    length INTEGER NOT NULL,
+                    finished BOOLEAN NOT NULL DEFAULT 0
+                )
+                """
+            )
+            
             self.connection.commit()
             self.logger.info(f"Database '{self.db_name}' initialized.")
         except sqlite3.Error as e:
@@ -100,11 +103,56 @@ class DBHandler:
         if self.connection:
             self.connection.close()
 
-    def fecth_ws_info(self):
+    def fetch_bottle_list(self, ws_code):
+        """
+        Fetch all bottles from the database for a given workstation code.
+        """
+        cursor = self.connection.cursor()
+        cursor.execute(
+            "SELECT * FROM bottle_location_tb WHERE location = ?", (ws_code,)
+        )
+        return [{"bottleCode": row["bottleCode"]} for row in cursor.fetchall()]
+
+    def fetch_ws_info(self):
         """
         Fetch all workstation information from the database.
         """
         cursor = self.connection.cursor()
         cursor.execute("SELECT * FROM workstation_tb")
-        ws_info = {row["code"] : dict(row) for row in cursor.fetchall()}
-        return ws_info
+        rows = cursor.fetchall()
+
+        workstation_list = []
+        for row in rows:
+            workstation_info = {
+                "workstationType": row["workstationType"],
+                "name": row["name"],
+                "code": row["code"],
+                "status": row["status"],
+                "bottleSlotCount": row["capacity"],
+                "bottleList": self.fetch_bottle_list(row["code"]),
+            }
+            workstation_list.append(workstation_info)
+
+        return workstation_list
+
+    def fetch_robot_info(self):
+        """
+        Fetch all workstation information from the database.
+        """
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT * FROM workstation_tb WHERE workstationType = 'robot'")
+        rows = cursor.fetchall()
+
+        robot_list = []
+        for row in rows:
+            robot_info = {
+                "workstationType": row["workstationType"],
+                "name": row["name"],
+                "code": row["code"],
+                "status": row["status"],
+                "bottleSlotCount": row["capacity"],
+                "bottleList": self.fetch_bottle_list(row["code"]),
+            }
+            robot_list.append(robot_info)
+
+        return robot_list

@@ -62,8 +62,8 @@ class Workstation:
         动态计算工作站状态：若有未完成任务则为 BUSY, 否则为 IDLE。
         """
         if all(record["status"] == "finish" for record in self._task_records.values()):
-            return "idle"
-        return "busy"
+            return "IDLE"
+        return "BUSY"
 
     def _monitor_tasks(self):
         """
