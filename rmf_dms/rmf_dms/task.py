@@ -10,6 +10,6 @@ class Task(BaseModel):
     name: str
     stamp: str
     expr_no: str
-    vials_count: str
+    vials_count: int
     steps: list
     level: int  # 无效参数

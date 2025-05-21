@@ -67,7 +67,7 @@ class DBHandler:
                     expr_no TEXT NOT NULL PRIMARY KEY,
                     stamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     vials_count INTEGER NOT NULL,
-                    steps INTEGER NOT NULL,
+                    steps TEXT NOT NULL,
                     length INTEGER NOT NULL,
                     finished BOOLEAN NOT NULL DEFAULT 0
                 )

@@ -107,7 +107,7 @@ class FakeDms:
             try:
                 conn = sqlite3.connect(self.db_name)
                 cursor = conn.cursor()
-                
+
                 # --------------------------------update ws-------------------------------------------------
                 # 为了安全地遍历字典（防止在遍历时被 heartbeart 并发修改导致 RuntimeError），复制一份字典的值来进行迭代。
                 ws_status_to_update = list(self.workstation_status.values())
@@ -146,9 +146,30 @@ class FakeDms:
                     else:
                         self.logger.debug("No valid workstation statuses to update.")
                 # --------------------------------------------------------------------------------
-                
+
                 # --------------------------------update task-----------------------------------
                 task_to_update = list(self.task_status.values())
+                if task_to_update:
+                    cursor.executemany(
+                        """
+                        INSERT INTO task_tb (name, expr_no, vials_count, steps, length, finished)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                        ON CONFLICT(expr_no) DO UPDATE SET
+                            finished=excluded.finished
+                        """,
+                        [
+                            (
+                                task_info["task"].name,
+                                task_info["task"].expr_no,
+                                task_info["task"].vials_count,
+                                json.dumps(task_info["task"].steps),
+                                len(task_info["task"].steps),
+                                int(task_info["finished"]),
+                            )
+                            for task_info in task_to_update
+                        ],
+                    )
+                    conn.commit()
                 # --------------------------------------------------------------------------------
 
             except sqlite3.Error as e:
@@ -225,7 +246,7 @@ class FakeDms:
                 "task_list": [],
             }
 
-            pprint(dms_status)
+            # pprint(dms_status)
 
             try:
                 response = requests.post(

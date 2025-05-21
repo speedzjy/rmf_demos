@@ -17,6 +17,30 @@
             "bottleList": []
         },
         {
+            "workstationType": "liquid",
+            "name": "liquid_1",
+            "code": "liquid_1",
+            "status": "IDLE",
+            "bottleSlotCount": 10,
+            "bottleList": []
+        },
+        {
+            "workstationType": "powder",
+            "name": "powder_1",
+            "code": "powder_1",
+            "status": "IDLE",
+            "bottleSlotCount": 10,
+            "bottleList": []
+        },
+        {
+            "workstationType": "solid",
+            "name": "solid_1",
+            "code": "solid_1",
+            "status": "IDLE",
+            "bottleSlotCount": 10,
+            "bottleList": []
+        },
+        {
             "workstationType": "starting_station",
             "name": "starting_station",
             "code": "starting_station",
@@ -54,30 +78,6 @@
                     "bottleCode": "bottle-10"
                 }
             ]
-        },
-        {
-            "workstationType": "powder",
-            "name": "powder_1",
-            "code": "powder_1",
-            "status": "IDLE",
-            "bottleSlotCount": 10,
-            "bottleList": []
-        },
-        {
-            "workstationType": "solid",
-            "name": "solid_1",
-            "code": "solid_1",
-            "status": "IDLE",
-            "bottleSlotCount": 10,
-            "bottleList": []
-        },
-        {
-            "workstationType": "liquid",
-            "name": "liquid_1",
-            "code": "liquid_1",
-            "status": "IDLE",
-            "bottleSlotCount": 10,
-            "bottleList": []
         }
     ],
     "bottle_execute_record_list": [],

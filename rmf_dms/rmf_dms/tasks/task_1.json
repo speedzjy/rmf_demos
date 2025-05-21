@@ -151,5 +151,171 @@
         ],
         "expr_no": "STC202409192215453300",
         "vials_count": 1
+    },
+    {
+        "name": "合成流程-1",
+        "stamp": "1970-01-20T23:39:15.353+00:00",
+        "level": 3,
+        "steps": [
+            {
+                "id": 5823481550110720,
+                "index": 1,
+                "workstation": "starting_station",
+                "detail": [
+                    {
+                        "material": null,
+                        "concentration": null,
+                        "value": null,
+                        "vials_no": "1",
+                        "actual_no": "",
+                        "material_code": null,
+                        "concentration_unit_code": null
+                    }
+                ],
+                "time": null,
+                "parameters": [
+                    {
+                        "machineTypeCode": "starting_station",
+                        "param": {
+                            "bottle_appoint": "0",
+                            "bottle_count": "1",
+                            "bottle_mapping_list": ""
+                        }
+                    }
+                ],
+                "condition": null,
+                "status": 1,
+                "branch_code": 0
+            },
+            {
+                "id": 5823481550110722,
+                "index": 2,
+                "workstation": "solid_dispensing",
+                "detail": [
+                    {
+                        "material": "Cu",
+                        "concentration": null,
+                        "value": 0.006,
+                        "vials_no": "1",
+                        "actual_no": "",
+                        "material_code": "ad362e34-7580-490d-b451-89899fa9daf0",
+                        "concentration_unit_code": null
+                    }
+                ],
+                "time": null,
+                "parameters": [],
+                "condition": null,
+                "status": 0,
+                "branch_code": 0
+            },
+            {
+                "id": 5823481550110725,
+                "index": 3,
+                "workstation": "liquid_dispensing",
+                "detail": [
+                    {
+                        "material": "H2O",
+                        "concentration": 1.0,
+                        "value": 1.0,
+                        "vials_no": "1",
+                        "actual_no": "",
+                        "material_code": "3db18fbde25941b0bf5435f8fb74e045",
+                        "concentration_unit_code": "mol/l"
+                    }
+                ],
+                "time": null,
+                "parameters": [],
+                "condition": null,
+                "status": 0,
+                "branch_code": 0
+            },
+            {
+                "id": 5823481550110723,
+                "index": 4,
+                "workstation": "magnetic_stirring",
+                "detail": [
+                    {
+                        "material": null,
+                        "concentration": null,
+                        "value": null,
+                        "vials_no": "1",
+                        "actual_no": "",
+                        "material_code": null,
+                        "concentration_unit_code": null
+                    }
+                ],
+                "time": 1.0,
+                "parameters": [
+                    {
+                        "machineTypeCode": "magnetic_stirring",
+                        "param": {
+                            "temperature": "20",
+                            "speed": "500"
+                        }
+                    }
+                ],
+                "condition": null,
+                "status": 0,
+                "branch_code": 0
+            },
+            {
+                "id": 5823481550110724,
+                "index": 5,
+                "workstation": "ultrasonic_cleaner",
+                "detail": [
+                    {
+                        "material": null,
+                        "concentration": null,
+                        "value": null,
+                        "vials_no": "1",
+                        "actual_no": "",
+                        "material_code": null,
+                        "concentration_unit_code": null
+                    }
+                ],
+                "time": 1.0,
+                "parameters": [
+                    {
+                        "machineTypeCode": "ultrasonic_cleaner",
+                        "param": {}
+                    }
+                ],
+                "condition": null,
+                "status": 0,
+                "branch_code": 0
+            },
+            {
+                "id": 5823481550110721,
+                "index": 6,
+                "workstation": "starting_station",
+                "detail": [
+                    {
+                        "material": null,
+                        "concentration": null,
+                        "value": null,
+                        "vials_no": "1",
+                        "actual_no": "",
+                        "material_code": null,
+                        "concentration_unit_code": null
+                    }
+                ],
+                "time": null,
+                "parameters": [
+                    {
+                        "machineTypeCode": "starting_station",
+                        "param": {
+                            "bottle_appoint": "0",
+                            "bottle_count": "1",
+                            "bottle_mapping_list": ""
+                        }
+                    }
+                ],
+                "condition": null,
+                "status": 0,
+                "branch_code": 0
+            }
+        ],
+        "expr_no": "STC202409192215537541",
+        "vials_count": 1
     }
 ]
