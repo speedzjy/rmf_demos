@@ -1,5 +1,6 @@
 import sqlite3
 import logging
+import json
 
 
 class DBHandler:
@@ -21,7 +22,8 @@ class DBHandler:
                     name TEXT NOT NULL,
                     code TEXT NOT NULL PRIMARY KEY,
                     status TEXT NOT NULL,
-                    capacity INTEGER NOT NULL DEFAULT 10
+                    capacity INTEGER NOT NULL DEFAULT 10,
+                    machineList TEXT NOT NULL
                 )
             """
             )
@@ -73,7 +75,7 @@ class DBHandler:
                 )
                 """
             )
-            
+
             self.connection.commit()
             self.logger.info(f"Database '{self.db_name}' initialized.")
         except sqlite3.Error as e:
@@ -130,6 +132,7 @@ class DBHandler:
                 "status": row["status"],
                 "bottleSlotCount": row["capacity"],
                 "bottleList": self.fetch_bottle_list(row["code"]),
+                "machineList": json.loads(row["machineList"]),
             }
             workstation_list.append(workstation_info)
 
@@ -156,3 +159,55 @@ class DBHandler:
             robot_list.append(robot_info)
 
         return robot_list
+
+    def fetch_task_info(self):
+        """
+        Fetch all task information from the database.
+        """
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT * FROM task_tb WHERE finished = 0")
+        rows = cursor.fetchall()
+
+        task_list = []
+        for row in rows:
+            task_info = {
+                "name": row["name"],
+                "expr_no": row["expr_no"],
+                "stamp": row["stamp"],
+                "vials_count": row["vials_count"],
+                "steps": json.loads(row["steps"]),
+            }
+            task_list.append(task_info)
+
+        return task_list
+
+    def allocate_bottles(self, vials_count: int):
+        cursor = self.connection.cursor()
+
+        # 查询未使用的瓶子，按 bottleCode 排序，限制数量为 vials_count
+        cursor.execute(
+            """
+            SELECT bottleCode FROM bottle_location_tb
+            WHERE is_used = 0
+            LIMIT ?
+            """,
+            (vials_count,),
+        )
+        bottles = [row[0] for row in cursor.fetchall()]
+
+        if not bottles or len(bottles) < vials_count:
+            raise ValueError("可用瓶子数量不足")
+
+        # 标记这些瓶子为已使用
+        cursor.executemany(
+            """
+            UPDATE bottle_location_tb
+            SET is_used = 1,
+                lastUpdated = CURRENT_TIMESTAMP
+            WHERE bottleCode = ?
+            """,
+            [(bottle,) for bottle in bottles],
+        )
+
+        self.connection.commit()
+        return bottles

@@ -1,6 +1,8 @@
 import threading
 import time
 import requests
+import os
+import json
 
 from datetime import datetime, timedelta
 from pydantic import BaseModel
@@ -12,6 +14,7 @@ class WorkstationStatusUpdate(BaseModel):
     code: str
     status: str
     capacity: int
+    machineList: list
 
 
 class Workstation:
@@ -30,6 +33,37 @@ class Workstation:
         self.name = name
         self.code = code
         self.capacity = capacity
+
+        if "dispensing" in self.code:
+            liquid_channel = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                "ws_channel_info",
+                "liquid_channel.json",
+            )
+            solid_channel = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                "ws_channel_info",
+                "solid_channel.json",
+            )
+
+            if "liquid" in self.code:
+                with open(liquid_channel, "r") as f:
+                    channel_list = json.load(f)
+            elif "solid" in self.code:
+                with open(solid_channel, "r") as f:
+                    channel_list = json.load(f)
+            else:
+                channel_list = []
+            self.machine_list = [
+                {"machineTypeCode": self.workstation_type, "channelList": channel_list}
+            ]
+        else:
+            self.machine_list = [
+                {
+                    "machineTypeCode": self.workstation_type,
+                }
+            ]
+
         self._task_records = (
             {}
         )  #  dms_cmd_id: {"start": datetime, "duration": float, "status": "procerssing"/"finish"}
@@ -90,6 +124,7 @@ class Workstation:
                 code=self.code,
                 status=self.status,
                 capacity=self.capacity,
+                machineList=self.machine_list,
             ).dict()
 
             try:

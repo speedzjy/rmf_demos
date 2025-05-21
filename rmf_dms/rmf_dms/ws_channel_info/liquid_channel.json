@@ -1,0 +1,46 @@
+[
+    {
+        "machineId": 1598229081986572288,
+        "materialId": null,
+        "materialCode": "7e09b008-0d64-45b2-a00c-ed187f0a492f",
+        "materialName": null,
+        "rest": 996.0,
+        "formula": "C4H6O2",
+        "alias": "甲基丙烯酸",
+        "concentration": 1.0,
+        "concentrationUnitCode": "mol/l"
+    },
+    {
+        "machineId": 1598229081986572288,
+        "materialId": null,
+        "materialCode": "9865b0a3-5d1a-4de4-8e43-ebf80bf1a8f9",
+        "materialName": null,
+        "rest": 996.0,
+        "formula": "C5H6N2",
+        "alias": "乙烯基咪唑",
+        "concentration": 1.0,
+        "concentrationUnitCode": "mol/l"
+    },
+    {
+        "machineId": 1598229081986572288,
+        "materialId": null,
+        "materialCode": "f4c1a6ac-c498-462b-af6c-38031544f369",
+        "materialName": null,
+        "rest": 996.0,
+        "formula": "C3H8O3",
+        "alias": "甘油",
+        "concentration": 1.0,
+        "concentrationUnitCode": "mol/l"
+    },
+    {
+        "machineId": 1598229081986572288,
+        "materialId": null,
+        "materialCode": "3db18fbde25941b0bf5435f8fb74e045",
+        "materialName": null,
+        "rest": 996.0,
+        "formula": "H2O",
+        "alias": "水",
+        "concentration": 1.0,
+        "concentrationUnitCode": "mol/l"
+    }
+]

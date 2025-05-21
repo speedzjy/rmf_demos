@@ -6,7 +6,12 @@
             "code": "tinyRobot1",
             "status": "IDLE",
             "bottleSlotCount": 80,
-            "bottleList": []
+            "bottleList": [],
+            "machineList": [
+                {
+                    "machineTypeCode": "robot"
+                }
+            ]
         },
         {
             "workstationType": "robot",
@@ -14,7 +19,12 @@
             "code": "tinyRobot2",
             "status": "IDLE",
             "bottleSlotCount": 80,
-            "bottleList": []
+            "bottleList": [],
+            "machineList": [
+                {
+                    "machineTypeCode": "robot"
+                }
+            ]
         },
         {
             "workstationType": "liquid",
@@ -22,23 +32,12 @@
             "code": "liquid_1",
             "status": "IDLE",
             "bottleSlotCount": 10,
-            "bottleList": []
-        },
-        {
-            "workstationType": "powder",
-            "name": "powder_1",
-            "code": "powder_1",
-            "status": "IDLE",
-            "bottleSlotCount": 10,
-            "bottleList": []
-        },
-        {
-            "workstationType": "solid",
-            "name": "solid_1",
-            "code": "solid_1",
-            "status": "IDLE",
-            "bottleSlotCount": 10,
-            "bottleList": []
+            "bottleList": [],
+            "machineList": [
+                {
+                    "machineTypeCode": "liquid"
+                }
+            ]
         },
         {
             "workstationType": "starting_station",
@@ -77,6 +76,122 @@
                 {
                     "bottleCode": "bottle-10"
                 }
+            ],
+            "machineList": [
+                {
+                    "machineTypeCode": "starting_station"
+                }
+            ]
+        },
+        {
+            "workstationType": "solid",
+            "name": "solid_1",
+            "code": "solid_1",
+            "status": "IDLE",
+            "bottleSlotCount": 10,
+            "bottleList": [],
+            "machineList": [
+                {
+                    "machineTypeCode": "solid"
+                }
+            ]
+        },
+        {
+            "workstationType": "powder",
+            "name": "powder_1",
+            "code": "powder_1",
+            "status": "IDLE",
+            "bottleSlotCount": 10,
+            "bottleList": [],
+            "machineList": [
+                {
+                    "machineTypeCode": "powder"
+                }
+            ]
+        },
+        {
+            "workstationType": "liquid_dispensing",
+            "name": "liquid_dispensing_1",
+            "code": "liquid_dispensing_1",
+            "status": "IDLE",
+            "bottleSlotCount": 10,
+            "bottleList": [],
+            "machineList": [
+                {
+                    "machineTypeCode": "liquid_dispensing",
+                    "channelList": [
+                        {
+                            "machineId": 1598229081986572288,
+                            "materialId": null,
+                            "materialCode": "7e09b008-0d64-45b2-a00c-ed187f0a492f",
+                            "materialName": null,
+                            "rest": 996.0,
+                            "formula": "C4H6O2",
+                            "alias": "甲基丙烯酸",
+                            "concentration": 1.0,
+                            "concentrationUnitCode": "mol/l"
+                        },
+                        {
+                            "machineId": 1598229081986572288,
+                            "materialId": null,
+                            "materialCode": "9865b0a3-5d1a-4de4-8e43-ebf80bf1a8f9",
+                            "materialName": null,
+                            "rest": 996.0,
+                            "formula": "C5H6N2",
+                            "alias": "乙烯基咪唑",
+                            "concentration": 1.0,
+                            "concentrationUnitCode": "mol/l"
+                        },
+                        {
+                            "machineId": 1598229081986572288,
+                            "materialId": null,
+                            "materialCode": "f4c1a6ac-c498-462b-af6c-38031544f369",
+                            "materialName": null,
+                            "rest": 996.0,
+                            "formula": "C3H8O3",
+                            "alias": "甘油",
+                            "concentration": 1.0,
+                            "concentrationUnitCode": "mol/l"
+                        },
+                        {
+                            "machineId": 1598229081986572288,
+                            "materialId": null,
+                            "materialCode": "3db18fbde25941b0bf5435f8fb74e045",
+                            "materialName": null,
+                            "rest": 996.0,
+                            "formula": "H2O",
+                            "alias": "水",
+                            "concentration": 1.0,
+                            "concentrationUnitCode": "mol/l"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "workstationType": "solid_dispensing",
+            "name": "solid_dispensing_1",
+            "code": "solid_dispensing_1",
+            "status": "IDLE",
+            "bottleSlotCount": 10,
+            "bottleList": [],
+            "machineList": [
+                {
+                    "machineTypeCode": "solid_dispensing",
+                    "channelList": [
+                        {
+                            "machineId": 1749255863559921664,
+                            "materialId": null,
+                            "materialCode": "ad362e34-7580-490d-b451-89899fa9daf0",
+                            "materialName": null,
+                            "rest": 996.0,
+                            "formula": "Cu",
+                            "alias": "",
+                            "concentration": null,
+                            "concentrationUnitCode": null
+                        }
+                    ]
+                }
             ]
         }
     ],
@@ -99,5 +214,323 @@
             "bottleList": []
         }
     ],
-    "task_list": []
+    "task_list": [
+        {
+            "name": "电化学流程-1",
+            "expr_no": "STC202409192215453300",
+            "stamp": "2025-05-21 10:03:10",
+            "vials_count": 1,
+            "steps": [
+                {
+                    "id": 5823481307201536,
+                    "index": 1,
+                    "workstation": "starting_station",
+                    "detail": [
+                        {
+                            "material": null,
+                            "concentration": null,
+                            "value": null,
+                            "vials_no": "1",
+                            "actual_no": "bottle-1",
+                            "material_code": null,
+                            "concentration_unit_code": null
+                        }
+                    ],
+                    "time": null,
+                    "parameters": [
+                        {
+                            "machineTypeCode": "starting_station",
+                            "param": {
+                                "bottle_appoint": "0",
+                                "bottle_count": "1",
+                                "bottle_mapping_list": ""
+                            }
+                        }
+                    ],
+                    "condition": null,
+                    "status": 1,
+                    "branch_code": 0
+                },
+                {
+                    "id": 5823481307267072,
+                    "index": 2,
+                    "workstation": "confecting_workstation",
+                    "detail": [
+                        {
+                            "material": null,
+                            "concentration": null,
+                            "value": null,
+                            "vials_no": "1",
+                            "actual_no": "bottle-1",
+                            "material_code": null,
+                            "concentration_unit_code": null
+                        }
+                    ],
+                    "time": null,
+                    "parameters": [
+                        {
+                            "machineTypeCode": "confecting_workstation",
+                            "param": {
+                                "others": "演示-ustc"
+                            }
+                        }
+                    ],
+                    "condition": null,
+                    "status": 0,
+                    "branch_code": 0
+                },
+                {
+                    "id": 5823481307267073,
+                    "index": 3,
+                    "workstation": "spotting_workstation",
+                    "detail": [
+                        {
+                            "material": null,
+                            "concentration": null,
+                            "value": null,
+                            "vials_no": "1",
+                            "actual_no": "bottle-1",
+                            "material_code": null,
+                            "concentration_unit_code": null
+                        }
+                    ],
+                    "time": null,
+                    "parameters": [
+                        {
+                            "machineTypeCode": "spotting_workstation",
+                            "param": {
+                                "others": "Predefined00"
+                            }
+                        }
+                    ],
+                    "condition": null,
+                    "status": 0,
+                    "branch_code": 0
+                },
+                {
+                    "id": 5823481307234305,
+                    "index": 4,
+                    "workstation": "furnace_workstation",
+                    "detail": [
+                        {
+                            "material": null,
+                            "concentration": null,
+                            "value": null,
+                            "vials_no": "1",
+                            "actual_no": "bottle-1",
+                            "material_code": null,
+                            "concentration_unit_code": null
+                        }
+                    ],
+                    "time": null,
+                    "parameters": [
+                        {
+                            "machineTypeCode": "furnace_workstation",
+                            "param": {
+                                "others": "ustc-test"
+                            }
+                        }
+                    ],
+                    "condition": null,
+                    "status": 0,
+                    "branch_code": 0
+                },
+                {
+                    "id": 5823481307234304,
+                    "index": 5,
+                    "workstation": "starting_station",
+                    "detail": [
+                        {
+                            "material": null,
+                            "concentration": null,
+                            "value": null,
+                            "vials_no": "1",
+                            "actual_no": "bottle-1",
+                            "material_code": null,
+                            "concentration_unit_code": null
+                        }
+                    ],
+                    "time": null,
+                    "parameters": [
+                        {
+                            "machineTypeCode": "starting_station",
+                            "param": {
+                                "bottle_appoint": "0",
+                                "bottle_count": "1",
+                                "bottle_mapping_list": ""
+                            }
+                        }
+                    ],
+                    "condition": null,
+                    "status": 0,
+                    "branch_code": 0
+                }
+            ]
+        },
+        {
+            "name": "合成流程-1",
+            "expr_no": "STC202409192215537541",
+            "stamp": "2025-05-21 10:03:10",
+            "vials_count": 1,
+            "steps": [
+                {
+                    "id": 5823481550110720,
+                    "index": 1,
+                    "workstation": "starting_station",
+                    "detail": [
+                        {
+                            "material": null,
+                            "concentration": null,
+                            "value": null,
+                            "vials_no": "1",
+                            "actual_no": "bottle-2",
+                            "material_code": null,
+                            "concentration_unit_code": null
+                        }
+                    ],
+                    "time": null,
+                    "parameters": [
+                        {
+                            "machineTypeCode": "starting_station",
+                            "param": {
+                                "bottle_appoint": "0",
+                                "bottle_count": "1",
+                                "bottle_mapping_list": ""
+                            }
+                        }
+                    ],
+                    "condition": null,
+                    "status": 1,
+                    "branch_code": 0
+                },
+                {
+                    "id": 5823481550110722,
+                    "index": 2,
+                    "workstation": "solid_dispensing",
+                    "detail": [
+                        {
+                            "material": "Cu",
+                            "concentration": null,
+                            "value": 0.006,
+                            "vials_no": "1",
+                            "actual_no": "bottle-2",
+                            "material_code": "ad362e34-7580-490d-b451-89899fa9daf0",
+                            "concentration_unit_code": null
+                        }
+                    ],
+                    "time": null,
+                    "parameters": [],
+                    "condition": null,
+                    "status": 0,
+                    "branch_code": 0
+                },
+                {
+                    "id": 5823481550110725,
+                    "index": 3,
+                    "workstation": "liquid_dispensing",
+                    "detail": [
+                        {
+                            "material": "H2O",
+                            "concentration": 1.0,
+                            "value": 1.0,
+                            "vials_no": "1",
+                            "actual_no": "bottle-2",
+                            "material_code": "3db18fbde25941b0bf5435f8fb74e045",
+                            "concentration_unit_code": "mol/l"
+                        }
+                    ],
+                    "time": null,
+                    "parameters": [],
+                    "condition": null,
+                    "status": 0,
+                    "branch_code": 0
+                },
+                {
+                    "id": 5823481550110723,
+                    "index": 4,
+                    "workstation": "magnetic_stirring",
+                    "detail": [
+                        {
+                            "material": null,
+                            "concentration": null,
+                            "value": null,
+                            "vials_no": "1",
+                            "actual_no": "bottle-2",
+                            "material_code": null,
+                            "concentration_unit_code": null
+                        }
+                    ],
+                    "time": 1.0,
+                    "parameters": [
+                        {
+                            "machineTypeCode": "magnetic_stirring",
+                            "param": {
+                                "temperature": "20",
+                                "speed": "500"
+                            }
+                        }
+                    ],
+                    "condition": null,
+                    "status": 0,
+                    "branch_code": 0
+                },
+                {
+                    "id": 5823481550110724,
+                    "index": 5,
+                    "workstation": "ultrasonic_cleaner",
+                    "detail": [
+                        {
+                            "material": null,
+                            "concentration": null,
+                            "value": null,
+                            "vials_no": "1",
+                            "actual_no": "bottle-2",
+                            "material_code": null,
+                            "concentration_unit_code": null
+                        }
+                    ],
+                    "time": 1.0,
+                    "parameters": [
+                        {
+                            "machineTypeCode": "ultrasonic_cleaner",
+                            "param": {}
+                        }
+                    ],
+                    "condition": null,
+                    "status": 0,
+                    "branch_code": 0
+                },
+                {
+                    "id": 5823481550110721,
+                    "index": 6,
+                    "workstation": "starting_station",
+                    "detail": [
+                        {
+                            "material": null,
+                            "concentration": null,
+                            "value": null,
+                            "vials_no": "1",
+                            "actual_no": "bottle-2",
+                            "material_code": null,
+                            "concentration_unit_code": null
+                        }
+                    ],
+                    "time": null,
+                    "parameters": [
+                        {
+                            "machineTypeCode": "starting_station",
+                            "param": {
+                                "bottle_appoint": "0",
+                                "bottle_count": "1",
+                                "bottle_mapping_list": ""
+                            }
+                        }
+                    ],
+                    "condition": null,
+                    "status": 0,
+                    "branch_code": 0
+                }
+            ]
+        }
+    ]
 }
