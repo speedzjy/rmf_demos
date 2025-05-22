@@ -15,6 +15,8 @@ class WorkstationStatusUpdate(BaseModel):
     status: str
     capacity: int
     machineList: list
+    sectionList: list = []
+    remark: str = ""
 
 
 class Workstation:
@@ -63,6 +65,8 @@ class Workstation:
                     "machineTypeCode": self.workstation_type,
                 }
             ]
+
+        self.section_list = [{"sectionCode": "lab", "sectionName": "lab"}]
 
         self._task_records = (
             {}
@@ -125,6 +129,8 @@ class Workstation:
                 status=self.status,
                 capacity=self.capacity,
                 machineList=self.machine_list,
+                sectionList=self.section_list,
+                remark="",
             ).dict()
 
             try:

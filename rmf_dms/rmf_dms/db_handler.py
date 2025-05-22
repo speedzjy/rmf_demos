@@ -23,7 +23,9 @@ class DBHandler:
                     code TEXT NOT NULL PRIMARY KEY,
                     status TEXT NOT NULL,
                     capacity INTEGER NOT NULL DEFAULT 10,
-                    machineList TEXT NOT NULL
+                    machineList TEXT NOT NULL,
+                    sectionList TEXT NOT NULL,
+                    remark TEXT
                 )
             """
             )
@@ -133,6 +135,8 @@ class DBHandler:
                 "bottleSlotCount": row["capacity"],
                 "bottleList": self.fetch_bottle_list(row["code"]),
                 "machineList": json.loads(row["machineList"]),
+                "sectionList": json.loads(row["sectionList"]),
+                "remark": row["remark"],
             }
             workstation_list.append(workstation_info)
 

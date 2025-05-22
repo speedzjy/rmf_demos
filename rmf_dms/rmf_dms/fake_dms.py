@@ -104,10 +104,14 @@ class FakeDms:
 
     def run_fake_ws(self):
         ws_code_list = [
-            {"ws_type": "liquid_dispensing", "ws_code": "liquid_dispensing_1"},
-            {"ws_type": "solid_dispensing", "ws_code": "solid_dispensing_1"},
-            {"ws_type": "powder", "ws_code": "powder_1"},
+            {"ws_type": "liquid_dispensing", "ws_code": "liquid_dispensing"},
+            {"ws_type": "solid_dispensing", "ws_code": "solid_dispensing"},
+            {"ws_type": "magnetic_stirring", "ws_code": "magnetic_stirring"},
             {"ws_type": "starting_station", "ws_code": "starting_station"},
+            {"ws_type": "ultrasonic_cleaner", "ws_code": "ultrasonic_cleaner"},
+            {"ws_type": "confecting_workstation", "ws_code": "confecting_workstation"},
+            {"ws_type": "spotting_workstation", "ws_code": "spotting_workstation"},
+            {"ws_type": "furnace_workstation", "ws_code": "furnace_workstation"},
         ]
 
         for ws_info in ws_code_list:
@@ -145,6 +149,10 @@ class FakeDms:
                                         "machineTypeCode": "robot",
                                     }
                                 ],
+                                sectionList=[
+                                    {"sectionCode": "lab", "sectionName": "lab"}
+                                ],
+                                remark="",
                             )
                             self.workstation_status[robot_name] = robot_status
                 else:
@@ -170,8 +178,8 @@ class FakeDms:
                 if ws_status_to_update:
                     cursor.executemany(
                         """
-                        INSERT INTO workstation_tb (workstationType, name, code, status, capacity, machineList)
-                        VALUES (?, ?, ?, ?, ?, ?)
+                        INSERT INTO workstation_tb (workstationType, name, code, status, capacity, machineList, sectionList, remark)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                         ON CONFLICT(code) DO UPDATE SET
                             status = excluded.status
                         """,
@@ -183,6 +191,8 @@ class FakeDms:
                                 ws_status.status,
                                 ws_status.capacity,
                                 json.dumps(ws_status.machineList),
+                                json.dumps(ws_status.sectionList),
+                                ws_status.remark,
                             )
                             for ws_status in ws_status_to_update
                         ],
