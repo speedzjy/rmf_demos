@@ -263,8 +263,13 @@ class FakeDms:
         self.logger.info("Scheduler is running...")
         db_handler_scheduler = DBHandler(self.db_name, self.logger)
 
+        # 等待到下一个整10秒
+        now = time.time()
+        next_tick = ((now // 10) + 1) * 10
+        time.sleep(next_tick - now)
+
         while not self.exit_event.is_set():
-            time.sleep(1.0)
+            start_time = time.time()
 
             dms_status = {
                 "workstation_list": db_handler_scheduler.fetch_ws_info(),
@@ -282,13 +287,16 @@ class FakeDms:
                 )
                 if response.status_code == 200:
                     data = response.json()
-                    # self.logger.info(f"Scheduler data: {data}")
+                    self.logger.info(f"Scheduler data: {response.text}")
                 else:
                     self.logger.info(
                         f"GET /scheduler failed with status code {response.status_code}"
                     )
             except requests.RequestException as e:
                 self.logger.info(f"Error during Post /scheduler: {e}")
+
+            elapsed_time = time.time() - start_time
+            time.sleep(max(0, 10.0 - elapsed_time))
 
         db_handler_scheduler.close()
 

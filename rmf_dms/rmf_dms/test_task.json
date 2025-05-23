@@ -11,7 +11,14 @@
                 {
                     "machineTypeCode": "robot"
                 }
-            ]
+            ],
+            "sectionList": [
+                {
+                    "sectionCode": "lab",
+                    "sectionName": "lab"
+                }
+            ],
+            "remark": ""
         },
         {
             "workstationType": "robot",
@@ -24,20 +31,14 @@
                 {
                     "machineTypeCode": "robot"
                 }
-            ]
-        },
-        {
-            "workstationType": "liquid",
-            "name": "liquid_1",
-            "code": "liquid_1",
-            "status": "IDLE",
-            "bottleSlotCount": 10,
-            "bottleList": [],
-            "machineList": [
+            ],
+            "sectionList": [
                 {
-                    "machineTypeCode": "liquid"
+                    "sectionCode": "lab",
+                    "sectionName": "lab"
                 }
-            ]
+            ],
+            "remark": ""
         },
         {
             "workstationType": "starting_station",
@@ -81,20 +82,14 @@
                 {
                     "machineTypeCode": "starting_station"
                 }
-            ]
-        },
-        {
-            "workstationType": "solid",
-            "name": "solid_1",
-            "code": "solid_1",
-            "status": "IDLE",
-            "bottleSlotCount": 10,
-            "bottleList": [],
-            "machineList": [
+            ],
+            "sectionList": [
                 {
-                    "machineTypeCode": "solid"
+                    "sectionCode": "lab",
+                    "sectionName": "lab"
                 }
-            ]
+            ],
+            "remark": ""
         },
         {
             "workstationType": "powder",
@@ -107,7 +102,47 @@
                 {
                     "machineTypeCode": "powder"
                 }
-            ]
+            ],
+            "sectionList": [
+                {
+                    "sectionCode": "lab",
+                    "sectionName": "lab"
+                }
+            ],
+            "remark": ""
+        },
+        {
+            "workstationType": "solid_dispensing",
+            "name": "solid_dispensing_1",
+            "code": "solid_dispensing_1",
+            "status": "IDLE",
+            "bottleSlotCount": 10,
+            "bottleList": [],
+            "machineList": [
+                {
+                    "machineTypeCode": "solid_dispensing",
+                    "channelList": [
+                        {
+                            "machineId": 1749255863559921664,
+                            "materialId": null,
+                            "materialCode": "ad362e34-7580-490d-b451-89899fa9daf0",
+                            "materialName": null,
+                            "rest": 996.0,
+                            "formula": "Cu",
+                            "alias": "",
+                            "concentration": null,
+                            "concentrationUnitCode": null
+                        }
+                    ]
+                }
+            ],
+            "sectionList": [
+                {
+                    "sectionCode": "lab",
+                    "sectionName": "lab"
+                }
+            ],
+            "remark": ""
         },
         {
             "workstationType": "liquid_dispensing",
@@ -166,12 +201,85 @@
                         }
                     ]
                 }
-            ]
+            ],
+            "sectionList": [
+                {
+                    "sectionCode": "lab",
+                    "sectionName": "lab"
+                }
+            ],
+            "remark": ""
+        },
+        {
+            "workstationType": "liquid_dispensing",
+            "name": "liquid_dispensing",
+            "code": "liquid_dispensing",
+            "status": "IDLE",
+            "bottleSlotCount": 10,
+            "bottleList": [],
+            "machineList": [
+                {
+                    "machineTypeCode": "liquid_dispensing",
+                    "channelList": [
+                        {
+                            "machineId": 1598229081986572288,
+                            "materialId": null,
+                            "materialCode": "7e09b008-0d64-45b2-a00c-ed187f0a492f",
+                            "materialName": null,
+                            "rest": 996.0,
+                            "formula": "C4H6O2",
+                            "alias": "甲基丙烯酸",
+                            "concentration": 1.0,
+                            "concentrationUnitCode": "mol/l"
+                        },
+                        {
+                            "machineId": 1598229081986572288,
+                            "materialId": null,
+                            "materialCode": "9865b0a3-5d1a-4de4-8e43-ebf80bf1a8f9",
+                            "materialName": null,
+                            "rest": 996.0,
+                            "formula": "C5H6N2",
+                            "alias": "乙烯基咪唑",
+                            "concentration": 1.0,
+                            "concentrationUnitCode": "mol/l"
+                        },
+                        {
+                            "machineId": 1598229081986572288,
+                            "materialId": null,
+                            "materialCode": "f4c1a6ac-c498-462b-af6c-38031544f369",
+                            "materialName": null,
+                            "rest": 996.0,
+                            "formula": "C3H8O3",
+                            "alias": "甘油",
+                            "concentration": 1.0,
+                            "concentrationUnitCode": "mol/l"
+                        },
+                        {
+                            "machineId": 1598229081986572288,
+                            "materialId": null,
+                            "materialCode": "3db18fbde25941b0bf5435f8fb74e045",
+                            "materialName": null,
+                            "rest": 996.0,
+                            "formula": "H2O",
+                            "alias": "水",
+                            "concentration": 1.0,
+                            "concentrationUnitCode": "mol/l"
+                        }
+                    ]
+                }
+            ],
+            "sectionList": [
+                {
+                    "sectionCode": "lab",
+                    "sectionName": "lab"
+                }
+            ],
+            "remark": ""
         },
         {
             "workstationType": "solid_dispensing",
-            "name": "solid_dispensing_1",
-            "code": "solid_dispensing_1",
+            "name": "solid_dispensing",
+            "code": "solid_dispensing",
             "status": "IDLE",
             "bottleSlotCount": 10,
             "bottleList": [],
@@ -192,7 +300,114 @@
                         }
                     ]
                 }
-            ]
+            ],
+            "sectionList": [
+                {
+                    "sectionCode": "lab",
+                    "sectionName": "lab"
+                }
+            ],
+            "remark": ""
+        },
+        {
+            "workstationType": "magnetic_stirring",
+            "name": "magnetic_stirring",
+            "code": "magnetic_stirring",
+            "status": "IDLE",
+            "bottleSlotCount": 10,
+            "bottleList": [],
+            "machineList": [
+                {
+                    "machineTypeCode": "magnetic_stirring"
+                }
+            ],
+            "sectionList": [
+                {
+                    "sectionCode": "lab",
+                    "sectionName": "lab"
+                }
+            ],
+            "remark": ""
+        },
+        {
+            "workstationType": "ultrasonic_cleaner",
+            "name": "ultrasonic_cleaner",
+            "code": "ultrasonic_cleaner",
+            "status": "IDLE",
+            "bottleSlotCount": 10,
+            "bottleList": [],
+            "machineList": [
+                {
+                    "machineTypeCode": "ultrasonic_cleaner"
+                }
+            ],
+            "sectionList": [
+                {
+                    "sectionCode": "lab",
+                    "sectionName": "lab"
+                }
+            ],
+            "remark": ""
+        },
+        {
+            "workstationType": "furnace_workstation",
+            "name": "furnace_workstation",
+            "code": "furnace_workstation",
+            "status": "IDLE",
+            "bottleSlotCount": 10,
+            "bottleList": [],
+            "machineList": [
+                {
+                    "machineTypeCode": "furnace_workstation"
+                }
+            ],
+            "sectionList": [
+                {
+                    "sectionCode": "lab",
+                    "sectionName": "lab"
+                }
+            ],
+            "remark": ""
+        },
+        {
+            "workstationType": "confecting_workstation",
+            "name": "confecting_workstation",
+            "code": "confecting_workstation",
+            "status": "IDLE",
+            "bottleSlotCount": 10,
+            "bottleList": [],
+            "machineList": [
+                {
+                    "machineTypeCode": "confecting_workstation"
+                }
+            ],
+            "sectionList": [
+                {
+                    "sectionCode": "lab",
+                    "sectionName": "lab"
+                }
+            ],
+            "remark": ""
+        },
+        {
+            "workstationType": "spotting_workstation",
+            "name": "spotting_workstation",
+            "code": "spotting_workstation",
+            "status": "IDLE",
+            "bottleSlotCount": 10,
+            "bottleList": [],
+            "machineList": [
+                {
+                    "machineTypeCode": "spotting_workstation"
+                }
+            ],
+            "sectionList": [
+                {
+                    "sectionCode": "lab",
+                    "sectionName": "lab"
+                }
+            ],
+            "remark": ""
         }
     ],
     "bottle_execute_record_list": [],
@@ -218,7 +433,7 @@
         {
             "name": "电化学流程-1",
             "expr_no": "STC202409192215453300",
-            "stamp": "2025-05-21 10:03:10",
+            "stamp": "2025-05-22 06:20:17",
             "vials_count": 1,
             "steps": [
                 {
@@ -370,7 +585,7 @@
         {
             "name": "合成流程-1",
             "expr_no": "STC202409192215537541",
-            "stamp": "2025-05-21 10:03:10",
+            "stamp": "2025-05-22 06:20:17",
             "vials_count": 1,
             "steps": [
                 {
