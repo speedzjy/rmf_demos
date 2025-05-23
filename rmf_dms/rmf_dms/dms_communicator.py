@@ -335,7 +335,7 @@ class TaskCommunicator(Node):
         self.async_loop.create_task(check_exit_event())
         self.async_loop.run_forever()
 
-    def run_flask(self, port=5000):
+    def run_flask(self, port=6001):
         log = logging.getLogger("werkzeug")
         log.setLevel(logging.CRITICAL)
         print(f"\n\033[92m * Flask app is starting on port: {port}\033[0m")

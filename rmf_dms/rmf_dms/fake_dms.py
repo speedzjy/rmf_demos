@@ -32,7 +32,7 @@ import sqlite3
 
 from fastapi import FastAPI, File, UploadFile
 from collections import defaultdict
-from pprint import pprint
+from pprint import pprint, pformat
 
 from .alog import AsyncLog
 from .workstation import WorkstationStatusUpdate, Workstation
@@ -55,6 +55,7 @@ class FakeDms:
         self.db_handler_main = DBHandler(self.db_name, self.logger)
         self.db_handler_main.init_db()
         self.db_handler_main.init_bottle_tb()
+        self.db_handler_main.bottle_cleanup()
         # -------------------------------------------------------
 
         # --------------------FastAPI后端--------------------------
@@ -92,13 +93,13 @@ class FakeDms:
             return {"status": "ok", "message": "Tasks updated."}
 
     def run_fastapi(self, port=6060):
-        print(f"\n\033[92mStart: FastAPI app is starting on port: {port}\033[\n")
+        print(f"\n\033[92mStart: FastAPI app is starting on port: {port}\033[0m\n")
         uvicorn.run(
             self.app,
             host="0.0.0.0",
             port=port,
-            log_level="info",
-            # log_level="warning",
+            # log_level="info",
+            log_level="warning",
             debug=True,
         )
 
@@ -168,96 +169,129 @@ class FakeDms:
         while not self.exit_event.is_set():
             # --- 执行数据库更新逻辑 ---
             conn = None
-            try:
-                conn = sqlite3.connect(self.db_name)
-                cursor = conn.cursor()
+            with self.db_lock:
+                try:
+                    conn = sqlite3.connect(self.db_name)
+                    cursor = conn.cursor()
 
-                # --------------------------------update ws-------------------------------------------------
-                # 为了安全地遍历字典，复制一份字典的值来进行迭代。
-                ws_status_to_update = list(self.workstation_status.values())
-                if ws_status_to_update:
-                    cursor.executemany(
-                        """
-                        INSERT INTO workstation_tb (workstationType, name, code, status, capacity, machineList, sectionList, remark)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                        ON CONFLICT(code) DO UPDATE SET
-                            status = excluded.status
-                        """,
-                        [
-                            (
-                                ws_status.workstationType,
-                                ws_status.name,
-                                ws_status.code,
-                                ws_status.status,
-                                ws_status.capacity,
-                                json.dumps(ws_status.machineList),
-                                json.dumps(ws_status.sectionList),
-                                ws_status.remark,
-                            )
-                            for ws_status in ws_status_to_update
-                        ],
-                    )
-                    conn.commit()
-                # --------------------------------------------------------------------------------
-
-                # --------------------------------update task-----------------------------------
-                with self.task_lock:
-                    if list(self.task_status.values()):
-                        data_to_insert = []
-
-                        for task_info in self.task_status.values():
-                            steps = task_info["task"].steps  # 原地修改
-
-                            if not steps[0]["detail"][0]["actual_no"]:
-                                actual_no_list = db_handler_updater.allocate_bottles(
-                                    task_info["task"].vials_count
-                                )
-                                self.logger.info(
-                                    f"Task {task_info['task'].name} 分配瓶子编号: {actual_no_list}"
-                                )
-
-                                # 对steps中的每个step的detail进行更新
-                                for step in steps:
-                                    for i, detail in enumerate(step["detail"]):
-                                        if not detail["actual_no"]:
-                                            detail["actual_no"] = actual_no_list[i]
-
-                            data_to_insert.append(
-                                (
-                                    task_info["task"].name,
-                                    task_info["task"].expr_no,
-                                    task_info["task"].vials_count,
-                                    json.dumps(steps),
-                                    len(steps),
-                                    int(task_info["finished"]),
-                                )
-                            )
-
+                    # --------------------------------update ws-------------------------------------------------
+                    # 为了安全地遍历字典，复制一份字典的值来进行迭代。
+                    ws_status_to_update = list(self.workstation_status.values())
+                    if ws_status_to_update:
                         cursor.executemany(
                             """
-                            INSERT INTO task_tb (name, expr_no, vials_count, steps, length, finished)
-                            VALUES (?, ?, ?, ?, ?, ?)
-                            ON CONFLICT(expr_no) DO UPDATE SET
-                                finished=excluded.finished
+                            INSERT INTO workstation_tb (workstationType, name, code, status, capacity, machineList, sectionList, remark)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                            ON CONFLICT(code) DO UPDATE SET
+                                status = excluded.status
                             """,
-                            data_to_insert,
+                            [
+                                (
+                                    ws_status.workstationType,
+                                    ws_status.name,
+                                    ws_status.code,
+                                    ws_status.status,
+                                    ws_status.capacity,
+                                    json.dumps(ws_status.machineList),
+                                    json.dumps(ws_status.sectionList),
+                                    ws_status.remark,
+                                )
+                                for ws_status in ws_status_to_update
+                            ],
                         )
                         conn.commit()
-                # --------------------------------------------------------------------------------
+                    # --------------------------------------------------------------------------------
 
-            except sqlite3.Error as e:
-                self.logger.error(f"Error updating database: {e}")
-            except Exception as e:
-                # 捕获其他可能的异常
-                self.logger.error(f"An unexpected error occurred during DB update: {e}")
-            finally:
-                # 确保在每个更新周期后关闭数据库连接
-                if conn:
-                    conn.close()
+                    # --------------------------------update task-----------------------------------
+                    with self.task_lock:
+                        if list(self.task_status.values()):
+                            data_to_insert = []
+
+                            for task_info in self.task_status.values():
+                                steps = task_info["task"].steps  # 原地修改
+
+                                if not steps[0]["detail"][0]["actual_no"]:
+                                    actual_no_list = (
+                                        db_handler_updater.allocate_bottles(
+                                            task_info["task"].vials_count
+                                        )
+                                    )
+                                    self.logger.info(
+                                        f"Task {task_info['task'].name} 分配瓶子编号: {actual_no_list}"
+                                    )
+
+                                    # 对steps中的每个step的detail进行更新
+                                    for step in steps:
+                                        for i, detail in enumerate(step["detail"]):
+                                            if not detail["actual_no"]:
+                                                detail["actual_no"] = actual_no_list[i]
+
+                                data_to_insert.append(
+                                    (
+                                        task_info["task"].name,
+                                        task_info["task"].expr_no,
+                                        task_info["task"].vials_count,
+                                        json.dumps(steps),
+                                        len(steps),
+                                        int(task_info["finished"]),
+                                    )
+                                )
+
+                            cursor.executemany(
+                                """
+                                INSERT INTO task_tb (name, expr_no, vials_count, steps, length, finished)
+                                VALUES (?, ?, ?, ?, ?, ?)
+                                ON CONFLICT(expr_no) DO UPDATE SET
+                                    finished=excluded.finished
+                                """,
+                                data_to_insert,
+                            )
+                            conn.commit()
+                    # --------------------------------------------------------------------------------
+
+                except sqlite3.Error as e:
+                    self.logger.error(f"Error updating database: {e}")
+                except Exception as e:
+                    # 捕获其他可能的异常
+                    self.logger.error(
+                        f"An unexpected error occurred during DB update: {e}"
+                    )
+                finally:
+                    # 确保在每个更新周期后关闭数据库连接
+                    if conn:
+                        conn.close()
 
             time.sleep(1.0)
 
         db_handler_updater.close()
+
+    def send_assign(self, one_assign):
+        if one_assign["operation"] == "start":
+            # 发送指令给工作站
+            ws_code = one_assign["workstation"]
+            self.ws_instance_dict[ws_code].start(one_assign["bottleList"])
+        elif one_assign["operation"] in ["put", "take"]:
+            # 发送指令给机器人
+            self.robot_execute(
+                one_assign["robot"],
+                one_assign["operation"],
+                one_assign["workstation"],
+                one_assign["bottleList"],
+            )
+            # self.workstation_status[robot_code].put(
+            #     one_assign["workstation"],
+            #     one_assign["bottleList"],
+            #     one_assign["operation"],
+            # )
+        elif one_assign["operation"] == "finish":
+            pass
+        else:
+            self.logger.info(
+                f"Unknown operation: {one_assign['operation']}. Cannot send assign."
+            )
+    
+    def robot_execute(self):
+        pass
 
     def run_scheduler(self):
         self.logger.info("Scheduler is running...")
@@ -273,27 +307,37 @@ class FakeDms:
 
             dms_status = {
                 "workstation_list": db_handler_scheduler.fetch_ws_info(),
-                "bottle_execute_record_list": [],
+                "bottle_execute_record_list": db_handler_scheduler.fetch_bottle_record_info(),
                 "robot_list": db_handler_scheduler.fetch_robot_info(),
                 "task_list": db_handler_scheduler.fetch_task_info(),
             }
 
             # pprint(dms_status)
 
+            next_assign = None
             try:
                 response = requests.post(
                     "http://localhost:5050/scheduling",
                     json=dms_status,
                 )
                 if response.status_code == 200:
-                    data = response.json()
-                    self.logger.info(f"Scheduler data: {response.text}")
+                    next_assign = response.json()
+                    self.logger.info(f"Scheduler data: {pformat(next_assign)}")
                 else:
                     self.logger.info(
                         f"GET /scheduler failed with status code {response.status_code}"
                     )
             except requests.RequestException as e:
                 self.logger.info(f"Error during Post /scheduler: {e}")
+
+            if next_assign:
+                with self.db_lock:
+                    for one_assign in next_assign["data"]:
+                        db_handler_scheduler.create_assign_if_not_exist(one_assign)
+
+                # 发指令给机器人和工作站
+                for one_assign in next_assign["data"]:
+                    self.send_assign(one_assign)
 
             elapsed_time = time.time() - start_time
             time.sleep(max(0, 10.0 - elapsed_time))

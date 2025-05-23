@@ -1,6 +1,7 @@
 import sqlite3
 import logging
 import json
+import uuid
 
 
 class DBHandler:
@@ -44,7 +45,6 @@ class DBHandler:
             cursor.execute(
                 """
                 CREATE TABLE IF NOT EXISTS bottle_record_tb (
-                    id INTEGER PRIMARY KEY,
                     createdTime DATETIME DEFAULT CURRENT_TIMESTAMP,
                     updatedTime DATETIME DEFAULT CURRENT_TIMESTAMP,
                     stepId TEXT NOT NULL,
@@ -59,7 +59,8 @@ class DBHandler:
                     robot TEXT NOT NULL,
                     expr_no TEXT NOT NULL,
                     fjspb_index INTEGER NOT NULL,
-                    bottle_code TEXT NOT NULL
+                    bottle_code TEXT NOT NULL,
+                    PRIMARY KEY (expr_no, fjspb_index, bottle_code, workstation, robot, operation)
                 )
                 """
             )
@@ -83,7 +84,7 @@ class DBHandler:
         except sqlite3.Error as e:
             self.logger.error(f"Error initializing database: {e}")
 
-    def init_bottle_tb(self):
+    def init_bottle_tb(self, num_bottles=20):
         cursor = self.connection.cursor()
 
         # 检查表是否为空
@@ -91,7 +92,10 @@ class DBHandler:
         count = cursor.fetchone()[0]
 
         if count == 0:
-            bottles = [("bottle-" + str(i), "starting_station") for i in range(1, 11)]
+            bottles = [
+                ("bottle-" + str(i), "starting_station")
+                for i in range(1, num_bottles + 1)
+            ]
             cursor.executemany(
                 "INSERT INTO bottle_location_tb (bottleCode, location) VALUES (?, ?)",
                 bottles,
@@ -185,6 +189,32 @@ class DBHandler:
 
         return task_list
 
+    def fetch_bottle_record_info(self):
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT * FROM bottle_record_tb")
+        rows = cursor.fetchall()
+        bottle_record_list = []
+        for row in rows:
+            bottle_record_info = {
+                "createdTime": row["createdTime"],
+                "updatedTime": row["updatedTime"],
+                "stepId": row["stepId"],
+                "index": row["index"],
+                "operation": row["operation"],
+                "status": row["status"],
+                "workstation": row["workstation"],
+                "workstationType": row["workstationType"],
+                "finishTime": row["finishTime"],
+                "time": row["time"],
+                "scheduleId": row["scheduleId"],
+                "robot": row["robot"],
+                "expr_no": row["expr_no"],
+                "fjspb_index": row["fjspb_index"],
+                "bottle_code": row["bottle_code"],
+            }
+            bottle_record_list.append(bottle_record_info)
+        return bottle_record_list
+
     def allocate_bottles(self, vials_count: int):
         cursor = self.connection.cursor()
 
@@ -215,3 +245,50 @@ class DBHandler:
 
         self.connection.commit()
         return bottles
+    
+    def bottle_cleanup(self):
+        cursor = self.connection.cursor()
+
+        # 将所有瓶子标记为未使用
+        cursor.execute(
+            """
+            UPDATE bottle_location_tb
+            SET is_used = 0,
+                lastUpdated = CURRENT_TIMESTAMP
+            """
+        )
+
+        self.connection.commit()
+
+    def create_assign_if_not_exist(self, one_assign):
+        cursor = self.connection.cursor()
+
+        cursor.executemany(
+            """
+            INSERT OR IGNORE INTO bottle_record_tb (
+                stepId, "index", operation, status, workstation, workstationType,
+                finishTime, time, scheduleId, robot, expr_no, fjspb_index, bottle_code
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                (
+                    bottle["stepId"],
+                    bottle["index"],
+                    one_assign["operation"],
+                    "processing",
+                    one_assign["workstation"],
+                    one_assign["parameters"][0]["machineTypeCode"],
+                    None,
+                    one_assign["time"],
+                    one_assign["scheduleId"],
+                    one_assign["robot"],
+                    bottle["expr_no"],
+                    bottle["fjspb_index"],
+                    bottle["bottleCode"],
+                )
+                for bottle in one_assign["bottleList"]
+            ],
+        )
+
+        self.connection.commit()
