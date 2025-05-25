@@ -2,6 +2,7 @@ import sqlite3
 import logging
 import json
 import uuid
+import datetime
 
 
 class DBHandler:
@@ -53,7 +54,7 @@ class DBHandler:
                     status TEXT NOT NULL,
                     workstation TEXT NOT NULL,
                     workstationType TEXT NOT NULL,
-                    finishTime DATETIME,
+                    finishTime TEXT,
                     time INTEGER,
                     scheduleId TEXT NOT NULL,
                     robot TEXT NOT NULL,
@@ -245,7 +246,7 @@ class DBHandler:
 
         self.connection.commit()
         return bottles
-    
+
     def bottle_cleanup(self):
         cursor = self.connection.cursor()
 
@@ -286,6 +287,37 @@ class DBHandler:
                     bottle["expr_no"],
                     bottle["fjspb_index"],
                     bottle["bottleCode"],
+                )
+                for bottle in one_assign["bottleList"]
+            ],
+        )
+
+        self.connection.commit()
+
+    def update_assign_status(self, one_assign):
+        cursor = self.connection.cursor()
+        now = datetime.datetime.now()
+        iso_now = now.isoformat()
+        ms_now = str(int(now.timestamp() * 1000))
+
+        cursor.executemany(
+            """
+            UPDATE bottle_record_tb
+            SET status = 'finish', updatedTime = ?, finishTime = ?
+            WHERE 
+            expr_no = ? AND fjspb_index = ? AND bottle_code = ? 
+            AND workstation = ? AND robot = ? AND operation = ?
+            """,
+            [
+                (
+                    iso_now,
+                    ms_now,
+                    bottle["expr_no"],
+                    bottle["fjspb_index"],
+                    bottle["bottleCode"],
+                    one_assign["workstation"],
+                    one_assign["robot"],
+                    one_assign["operation"],
                 )
                 for bottle in one_assign["bottleList"]
             ],

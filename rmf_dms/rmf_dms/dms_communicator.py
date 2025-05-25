@@ -108,11 +108,11 @@ class TaskCommunicator(Node):
     def setup_routes(self):
         @self.app.route("/assign", methods=["POST"])
         def assign():
-            data = request.get_json()
-            destination = data.get("destination")
-            robot = data.get("robot")
-            fleet = data.get("fleet")
-            dms_cmd_id = data.get("dms_cmd_id", 0)
+            one_assign = request.get_json()
+            destination = one_assign.get("workstation")
+            robot = one_assign.get("robot")
+            # fleet = data.get("fleet")
+            fleet = "tinyRobot"
 
             if destination is None or robot is None or fleet is None:
                 return (
@@ -122,10 +122,10 @@ class TaskCommunicator(Node):
                     400,
                 )
 
-            self.get_logger().info(f"\033[92mReceived assignment\033[0m: {data}")
+            self.get_logger().info(f"\033[92mReceived assignment\033[0m: {one_assign}")
 
             self.async_loop.create_task(
-                self.task_tracker(dms_cmd_id, robot, fleet, destination)
+                self.task_tracker(robot, fleet, destination, one_assign)
             )
 
             return jsonify(
@@ -134,11 +134,10 @@ class TaskCommunicator(Node):
                     "destination": destination,
                     "robot": robot,
                     "fleet": fleet,
-                    "dms_cmd_id": dms_cmd_id,
                 }
             )
 
-    async def task_tracker(self, dms_cmd_id, robot, fleet, destination):
+    async def task_tracker(self, robot, fleet, destination, one_assign):
         self.get_logger().info(
             f"[async \033[92m{robot}\033[0m] task \033[92mbegin\033[0m"
         )
@@ -160,6 +159,7 @@ class TaskCommunicator(Node):
         request_id = await self.go_to_place(robot, fleet, destination)
 
         await self.wait_for_task_completion_async(request_id, robot)
+        await self.send_finish_signal(one_assign)
 
         self.get_logger().info(
             f"[async \033[92m{robot}\033[0m] task \033[92mend\033[0m"
@@ -230,6 +230,20 @@ class TaskCommunicator(Node):
                 await asyncio.sleep(1.0)
 
         return parking_task_id
+
+    async def send_finish_signal(self, one_assign):
+        url = "http://localhost:6060/finish_signal"  # 端口请根据实际调整
+        headers = {"Content-Type": "application/json"}
+
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(url, json=one_assign, headers=headers) as resp:
+                    resp_text = await resp.text()
+                    self.get_logger().info(
+                        f"发送指令状态，状态码: {resp.status}, 响应内容: {resp_text}"
+                    )
+            except aiohttp.ClientError as e:
+                self.get_logger().error(f"请求失败: {e}")
 
     async def go_to_place(self, robot, fleet, destination, orientation=0):
         self.get_logger().info(

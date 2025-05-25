@@ -30,7 +30,7 @@ import signal
 import uvicorn
 import sqlite3
 
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, Request
 from collections import defaultdict
 from pprint import pprint, pformat
 
@@ -91,6 +91,16 @@ class FakeDms:
                     if task.name not in self.task_status:
                         self.task_status[task.name] = {"task": task, "finished": 0}
             return {"status": "ok", "message": "Tasks updated."}
+
+        @self.app.post("/finish_signal")
+        async def finish_signal(request: Request):
+            routes_db_handler = DBHandler(self.db_name, self.logger)
+            finished_assign = await request.json()
+            with self.db_lock:
+                # self.logger.info(finished_assign)
+                routes_db_handler.update_assign_status(finished_assign)
+            routes_db_handler.close()
+            return {"status": "ok", "message": "Finish signal received."}
 
     def run_fastapi(self, port=6060):
         print(f"\n\033[92mStart: FastAPI app is starting on port: {port}\033[0m\n")
@@ -272,12 +282,7 @@ class FakeDms:
             self.ws_instance_dict[ws_code].start(one_assign["bottleList"])
         elif one_assign["operation"] in ["put", "take"]:
             # 发送指令给机器人
-            self.robot_execute(
-                one_assign["robot"],
-                one_assign["operation"],
-                one_assign["workstation"],
-                one_assign["bottleList"],
-            )
+            self.robot_execute(one_assign)
             # self.workstation_status[robot_code].put(
             #     one_assign["workstation"],
             #     one_assign["bottleList"],
@@ -289,9 +294,19 @@ class FakeDms:
             self.logger.info(
                 f"Unknown operation: {one_assign['operation']}. Cannot send assign."
             )
-    
-    def robot_execute(self):
-        pass
+
+    def robot_execute(self, one_assign):
+        url = "http://localhost:6001/assign"
+        headers = {"Content-Type": "application/json"}
+
+        try:
+            response = requests.post(url, headers=headers, json=one_assign)
+            response.raise_for_status()  # 检查是否成功
+            self.logger.info(
+                f"机器人指令下发成功: {response.status_code}, 返回内容: {response.text}"
+            )
+        except requests.exceptions.RequestException as e:
+            self.logger.error(f"POST 请求失败: {e}")
 
     def run_scheduler(self):
         self.logger.info("Scheduler is running...")
