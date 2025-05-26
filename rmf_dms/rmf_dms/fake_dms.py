@@ -86,10 +86,18 @@ class FakeDms:
 
         @self.app.post("/tasks")
         async def tasks(tasks_info: list[Task]):
-            with self.task_lock:
-                for task in tasks_info:
-                    if task.name not in self.task_status:
-                        self.task_status[task.name] = {"task": task, "finished": 0}
+            task_db_handler = DBHandler(self.db_name, self.logger)
+            with self.db_lock:
+                task_list = task_db_handler.fetch_task_info(all_tasks=True)
+                existing_task_names = {task["name"] for task in task_list}
+
+                with self.task_lock:
+                    for task in tasks_info:
+                        if (
+                            task.name not in existing_task_names
+                            and task.name not in self.task_status
+                        ):
+                            self.task_status[task.name] = {"task": task, "finished": 0}
             return {"status": "ok", "message": "Tasks updated."}
 
         @self.app.post("/finish_signal")
@@ -253,14 +261,15 @@ class FakeDms:
 
                             cursor.executemany(
                                 """
-                                INSERT INTO task_tb (name, expr_no, vials_count, steps, length, finished)
+                                INSERT OR IGNORE INTO task_tb (name, expr_no, vials_count, steps, length, finished)
                                 VALUES (?, ?, ?, ?, ?, ?)
-                                ON CONFLICT(expr_no) DO UPDATE SET
-                                    finished=excluded.finished
                                 """,
                                 data_to_insert,
                             )
                             conn.commit()
+
+                            # 写入后，清空任务缓存
+                            self.task_status.clear()
                     # --------------------------------------------------------------------------------
 
                 except sqlite3.Error as e:

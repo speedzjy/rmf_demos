@@ -4,6 +4,8 @@ import json
 import uuid
 import datetime
 
+from pprint import pprint, pformat
+
 
 class DBHandler:
     def __init__(self, db_name, logger: logging.Logger):
@@ -169,12 +171,15 @@ class DBHandler:
 
         return robot_list
 
-    def fetch_task_info(self):
+    def fetch_task_info(self, all_tasks=False):
         """
         Fetch all task information from the database.
         """
         cursor = self.connection.cursor()
-        cursor.execute("SELECT * FROM task_tb WHERE finished = 0")
+        if all_tasks:
+            cursor.execute("SELECT * FROM task_tb")
+        else:
+            cursor.execute("SELECT * FROM task_tb WHERE finished = 0")
         rows = cursor.fetchall()
 
         task_list = []
@@ -190,9 +195,17 @@ class DBHandler:
 
         return task_list
 
+    # 只获取未完成任务的瓶子记录
     def fetch_bottle_record_info(self):
         cursor = self.connection.cursor()
-        cursor.execute("SELECT * FROM bottle_record_tb")
+        cursor.execute(
+            """
+            SELECT br.*
+            FROM bottle_record_tb br
+            JOIN task_tb t ON br.expr_no = t.expr_no
+            WHERE t.finished = 0
+        """
+        )
         rows = cursor.fetchall()
         bottle_record_list = []
         for row in rows:
@@ -376,9 +389,7 @@ class DBHandler:
             cursor.execute("SELECT length FROM task_tb WHERE expr_no = ?", (expr_no,))
             result = cursor.fetchone()
             if result and result[0] == max_index:
-                # 更新为 finished
                 cursor.execute(
                     "UPDATE task_tb SET finished = 1 WHERE expr_no = ?", (expr_no,)
                 )
-
         self.connection.commit()

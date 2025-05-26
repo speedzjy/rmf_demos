@@ -99,6 +99,7 @@ class Workstation:
                 "status": "processing",
                 "assign": one_assign,
             }
+        self.logger.info(f"{self.code} 开始任务...")
 
     @property
     def status(self) -> str:
@@ -128,9 +129,7 @@ class Workstation:
                                 headers={"Content-Type": "application/json"},
                             )
                             if response.status_code == 200:
-                                self.logger.info(
-                                    f"{self.code} 发送任务完成指令成功"
-                                )
+                                self.logger.info(f"{self.code} 发送任务完成指令成功")
                                 # 发送成功后清空任务记录
                                 self._task_records = {}
                             else:
