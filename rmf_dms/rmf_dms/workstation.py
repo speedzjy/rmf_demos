@@ -28,6 +28,7 @@ class Workstation:
         capacity: int = 10,
         heartbeat_url: str = "http://localhost:6060/heartbeat",
         heartbeat_interval: float = 3,
+        task_finish_url: str = "http://localhost:6060/finish_signal",
         event: threading.Event = None,
         logger=None,
     ):
@@ -68,13 +69,12 @@ class Workstation:
 
         self.section_list = [{"sectionCode": "lab", "sectionName": "lab"}]
 
-        self._task_records = (
-            {}
-        )  #  dms_cmd_id: {"start": datetime, "duration": float, "status": "procerssing"/"finish"}
-        self._unfinished_tasks = set()
+        self._records_lock = threading.Lock()
+        self._task_records = {}
 
         self.heartbeat_url = heartbeat_url
         self.heartbeat_interval = heartbeat_interval
+        self.task_finish_url = task_finish_url
         self.exit_event = event if event else threading.Event()
         self.logger = logger
 
@@ -84,24 +84,28 @@ class Workstation:
         self.thread_monitor = threading.Thread(target=self._monitor_tasks, daemon=True)
         self.thread_monitor.start()
 
-    def start(self, dms_cmd_id: str, duration: float):
+    def start(self, one_assign: dict, default_duration: float = 1.0):
         """
         启动任务并记录任务开始时间与持续时间。
         """
-        self._task_records[dms_cmd_id] = {
-            "start": datetime.now(),
-            "duration": duration,
-            "status": "processing",
-        }
+        with self._records_lock:
+            self._task_records = {
+                "start": datetime.now(),
+                "duration": (
+                    one_assign["time"]
+                    if one_assign["time"] is not None
+                    else default_duration
+                ),
+                "status": "processing",
+                "assign": one_assign,
+            }
 
     @property
     def status(self) -> str:
         """
         动态计算工作站状态：若有未完成任务则为 BUSY, 否则为 IDLE。
         """
-        if all(record["status"] == "finish" for record in self._task_records.values()):
-            return "IDLE"
-        return "BUSY"
+        return "BUSY" if self._task_records else "IDLE"
 
     def _monitor_tasks(self):
         """
@@ -109,12 +113,37 @@ class Workstation:
         """
         while not self.exit_event.is_set():
             now = datetime.now()
-            for dms_cmd_id, record in self._task_records.items():
-                if record["status"] != "finish":
-                    elapsed = (now - record["start"]).total_seconds()
-                    if elapsed >= record["duration"]:
-                        record["status"] = "finish"
-            time.sleep(0.5)
+            with self._records_lock:
+                if self._task_records:
+                    # 以分钟为单位计算已用时间
+                    # elapsed = (now - self._task_records["start"]).total_seconds() # 以s为单位，测试用
+                    elapsed = (now - self._task_records["start"]).total_seconds() / 60.0
+                    if elapsed >= self._task_records["duration"]:
+                        self._task_records["status"] = "finish"
+
+                        try:
+                            response = requests.post(
+                                self.task_finish_url,
+                                json=self._task_records["assign"],
+                                headers={"Content-Type": "application/json"},
+                            )
+                            if response.status_code == 200:
+                                self.logger.info(
+                                    f"{self.code} 发送任务完成指令成功"
+                                )
+                                # 发送成功后清空任务记录
+                                self._task_records = {}
+                            else:
+                                # 如果状态码不是200，记录错误信息
+                                self.logger.error(
+                                    f"{self.code} 发送任务完成指令失败: {response.status_code} - {response.text}"
+                                )
+                        except requests.RequestException as e:
+                            self.logger.error(
+                                f"{self.code} 发送任务完成指令请求失败: {e}"
+                            )
+
+            time.sleep(0.2)
 
     def _heartbeat(self):
         while not self.exit_event.is_set():

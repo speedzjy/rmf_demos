@@ -94,11 +94,15 @@ class FakeDms:
 
         @self.app.post("/finish_signal")
         async def finish_signal(request: Request):
+            """
+            修改bottlelist中每个瓶子的任务状态, 并更改瓶子位置
+            """
+
             routes_db_handler = DBHandler(self.db_name, self.logger)
             finished_assign = await request.json()
             with self.db_lock:
                 # self.logger.info(finished_assign)
-                routes_db_handler.update_assign_status(finished_assign)
+                routes_db_handler.update_task_status(finished_assign)
             routes_db_handler.close()
             return {"status": "ok", "message": "Finish signal received."}
 
@@ -279,15 +283,9 @@ class FakeDms:
         if one_assign["operation"] == "start":
             # 发送指令给工作站
             ws_code = one_assign["workstation"]
-            self.ws_instance_dict[ws_code].start(one_assign["bottleList"])
+            self.ws_instance_dict[ws_code].start(one_assign)
         elif one_assign["operation"] in ["put", "take"]:
-            # 发送指令给机器人
             self.robot_execute(one_assign)
-            # self.workstation_status[robot_code].put(
-            #     one_assign["workstation"],
-            #     one_assign["bottleList"],
-            #     one_assign["operation"],
-            # )
         elif one_assign["operation"] == "finish":
             pass
         else:
@@ -320,12 +318,13 @@ class FakeDms:
         while not self.exit_event.is_set():
             start_time = time.time()
 
-            dms_status = {
-                "workstation_list": db_handler_scheduler.fetch_ws_info(),
-                "bottle_execute_record_list": db_handler_scheduler.fetch_bottle_record_info(),
-                "robot_list": db_handler_scheduler.fetch_robot_info(),
-                "task_list": db_handler_scheduler.fetch_task_info(),
-            }
+            with self.db_lock:
+                dms_status = {
+                    "workstation_list": db_handler_scheduler.fetch_ws_info(),
+                    "bottle_execute_record_list": db_handler_scheduler.fetch_bottle_record_info(),
+                    "robot_list": db_handler_scheduler.fetch_robot_info(),
+                    "task_list": db_handler_scheduler.fetch_task_info(),
+                }
 
             # pprint(dms_status)
 
@@ -348,7 +347,10 @@ class FakeDms:
             if next_assign:
                 with self.db_lock:
                     for one_assign in next_assign["data"]:
-                        db_handler_scheduler.create_assign_if_not_exist(one_assign)
+                        if one_assign["operation"] != "finish":
+                            db_handler_scheduler.create_assign_if_not_exist(one_assign)
+                        else:
+                            db_handler_scheduler.execute_finish_assign(one_assign)
 
                 # 发指令给机器人和工作站
                 for one_assign in next_assign["data"]:

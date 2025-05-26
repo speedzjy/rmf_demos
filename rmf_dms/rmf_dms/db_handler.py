@@ -264,6 +264,14 @@ class DBHandler:
     def create_assign_if_not_exist(self, one_assign):
         cursor = self.connection.cursor()
 
+        # 根据 workstation code 获取 workstationType
+        cursor.execute(
+            "SELECT workstationType FROM workstation_tb WHERE code = ?",
+            (one_assign["workstation"],),
+        )
+        result = cursor.fetchone()
+        workstation_type = result[0] if result else None  # 如果找不到，设为 None
+
         cursor.executemany(
             """
             INSERT OR IGNORE INTO bottle_record_tb (
@@ -279,7 +287,7 @@ class DBHandler:
                     one_assign["operation"],
                     "processing",
                     one_assign["workstation"],
-                    one_assign["parameters"][0]["machineTypeCode"],
+                    workstation_type,
                     None,
                     one_assign["time"],
                     one_assign["scheduleId"],
@@ -294,11 +302,12 @@ class DBHandler:
 
         self.connection.commit()
 
-    def update_assign_status(self, one_assign):
+    # 更改bottle_record_tb中瓶子的状态为完成，并更改bottle_location_tb中瓶子的位置
+    def update_task_status(self, one_assign):
         cursor = self.connection.cursor()
         now = datetime.datetime.now()
-        iso_now = now.isoformat()
-        ms_now = str(int(now.timestamp() * 1000))
+        iso_now = now.replace(microsecond=0).isoformat()
+        ms_now = int(now.timestamp() * 1000)
 
         cursor.executemany(
             """
@@ -311,7 +320,12 @@ class DBHandler:
             [
                 (
                     iso_now,
-                    ms_now,
+                    # 适应原化学家1.0的逻辑
+                    (
+                        str(ms_now)
+                        if one_assign["time"] is None
+                        else str(ms_now - int(one_assign["time"]) * 60 * 1000)
+                    ),
                     bottle["expr_no"],
                     bottle["fjspb_index"],
                     bottle["bottleCode"],
@@ -322,5 +336,49 @@ class DBHandler:
                 for bottle in one_assign["bottleList"]
             ],
         )
+
+        if one_assign["operation"] in ("take", "put"):
+            new_location = (
+                one_assign["robot"]
+                if one_assign["operation"] == "take"
+                else one_assign["workstation"]
+            )
+            cursor.executemany(
+                """
+                UPDATE bottle_location_tb
+                SET location = ?, lastUpdated = CURRENT_TIMESTAMP
+                WHERE bottleCode = ?
+                """,
+                [
+                    (new_location, bottle["bottleCode"])
+                    for bottle in one_assign["bottleList"]
+                ],
+            )
+
+        self.connection.commit()
+
+    def execute_finish_assign(self, one_assign):
+        """
+        完成一个任务分配，更新数据库中的记录。
+        """
+        cursor = self.connection.cursor()
+
+        # 1. 聚合：找出每个 expr_no 的最大 index
+        expr_index_map = {}
+        for bottle in one_assign["bottleList"]:
+            expr_no = bottle["expr_no"]
+            index = bottle["index"]
+            if expr_no not in expr_index_map or index > expr_index_map[expr_no]:
+                expr_index_map[expr_no] = index
+
+        # 2. 遍历每个 expr_no 检查是否任务已完成
+        for expr_no, max_index in expr_index_map.items():
+            cursor.execute("SELECT length FROM task_tb WHERE expr_no = ?", (expr_no,))
+            result = cursor.fetchone()
+            if result and result[0] == max_index:
+                # 更新为 finished
+                cursor.execute(
+                    "UPDATE task_tb SET finished = 1 WHERE expr_no = ?", (expr_no,)
+                )
 
         self.connection.commit()
