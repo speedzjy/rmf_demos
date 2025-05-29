@@ -1,7 +1,7 @@
 coordinate_system: reference_image
 crowd_sim:
   agent_groups:
-    - {agents_name: [tinyRobot1], agents_number: 1, group_id: 0, profile_selector: external_agent, state_selector: external_static, x: 0, y: 0}
+    - {agents_name: [tinyRobot1, tinyRobot2, tinyRobot3], agents_number: 3, group_id: 0, profile_selector: external_agent, state_selector: external_static, x: 0, y: 0}
   agent_profiles:
     - {ORCA_tau: 1, ORCA_tauObst: 0.40000000000000002, class: 1, max_accel: 0, max_angle_vel: 0, max_neighbors: 10, max_speed: 0, name: external_agent, neighbor_dist: 5, obstacle_set: 1, pref_speed: 0, r: 0.25}
   enable: 0
@@ -16,33 +16,111 @@ graphs:
   {}
 levels:
   L1:
+    doors:
+      - [31, 32, {motion_axis: [1, start], motion_degrees: [3, 90], motion_direction: [2, 1], name: [1, 3F301_door1], plugin: [1, normal], right_left_ratio: [3, 1], type: [1, hinged]}]
+      - [33, 34, {motion_axis: [1, start], motion_degrees: [3, 90], motion_direction: [2, 1], name: [1, 3F302_door1], plugin: [1, normal], right_left_ratio: [3, 1], type: [1, double_hinged]}]
     drawing:
       filename: ustclab.png
     elevation: 0
     floors:
       - parameters: {ceiling_scale: [3, 1], ceiling_texture: [1, blue_linoleum], indoor: [2, 0], texture_name: [1, blue_linoleum], texture_rotation: [3, 0], texture_scale: [3, 1]}
-        vertices: [7, 10, 9, 11, 12, 8]
+        vertices: [4, 8, 7, 12, 11, 13, 15]
+      - parameters: {ceiling_scale: [3, 1], ceiling_texture: [1, blue_linoleum], indoor: [2, 0], texture_name: [1, blue_linoleum], texture_rotation: [3, 0], texture_scale: [3, 1]}
+        vertices: [15, 16, 17, 18, 20, 14, 13]
+    lanes:
+      - [21, 28, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [28, 25, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [22, 29, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [23, 27, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [29, 28, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [27, 25, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [30, 24, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [30, 42, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [42, 43, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [43, 44, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [44, 45, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [45, 41, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [41, 40, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [40, 39, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [39, 38, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [38, 37, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [37, 36, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [36, 35, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [35, 24, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [26, 46, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [25, 50, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [53, 26, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [30, 47, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [53, 50, {bidirectional: [4, false], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [50, 51, {bidirectional: [4, false], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [51, 52, {bidirectional: [4, false], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [52, 53, {bidirectional: [4, false], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [46, 48, {bidirectional: [4, false], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [48, 49, {bidirectional: [4, false], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [49, 47, {bidirectional: [4, false], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
+      - [47, 46, {bidirectional: [4, false], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""], speed_limit: [3, 0]}]
     layers:
       {}
     measurements:
-      - [2, 3, {distance: [3, 76.799999999999997]}]
-      - [5, 4, {distance: [3, 97.200000000000003]}]
+      - [0, 1, {distance: [3, 76.799999999999997]}]
+      - [3, 2, {distance: [3, 97.200000000000003]}]
     vertices:
-      - [1232.421, 658.56700000000001, 0, tinyRobot1_charger, {is_charger: [4, true], is_holding_point: [4, true], is_parking_spot: [4, true], spawn_robot_name: [1, tinyRobot1], spawn_robot_type: [1, TinyRobot]}]
-      - [1365.1089999999999, 1120.3630000000001, 0, ultrasonic_cleaner]
       - [1200.453, 296.416, 0, ""]
       - [4228.9790000000003, 296.48599999999999, 0, ""]
       - [802.48699999999997, 635.48500000000001, 0, ""]
       - [802.56799999999998, 4468.9859999999999, 0, ""]
-      - [1322.97, 660.72400000000005, 0, tinyRobot2_charger, {is_charger: [4, true], is_holding_point: [4, true], is_parking_spot: [4, true], spawn_robot_name: [1, tinyRobot2], spawn_robot_type: [1, TinyRobot]}]
       - [1166.925, 620.47799999999995, 0, ""]
       - [1167.172, 966.89999999999998, 0, ""]
-      - [1563.067, 951.03099999999995, 0, ""]
-      - [1562.0070000000001, 620.5, 0, ""]
-      - [1562.4870000000001, 983.48199999999997, 0, ""]
       - [1167.0309999999999, 982.98900000000003, 0, ""]
+      - [1221.203, 2536.6970000000001, 0, ""]
+      - [1143.6479999999999, 2537.694, 0, ""]
+      - [1693.5060000000001, 2540.558, 0, ""]
+      - [1957.2550000000001, 2540.585, 0, ""]
+      - [1973.6030000000001, 1404.8889999999999, 0, ""]
+      - [1973.5719999999999, 2540.9400000000001, 0, ""]
+      - [3745.8299999999999, 1396.7249999999999, 0, ""]
+      - [3746.3359999999998, 1708.386, 0, ""]
+      - [4310.2910000000002, 620.25699999999995, 0, ""]
+      - [4309.9549999999999, 1913.078, 0, ""]
+      - [4282.9669999999996, 1913.248, 0, ""]
+      - [4282.652, 2006.9100000000001, 0, ""]
+      - [3870.7249999999999, 2007.0060000000001, 0, ""]
+      - [3751.319, 2008.8889999999999, 0, ""]
+      - [1280.566, 708.55100000000004, 0, tinyRobot1_charger, {is_charger: [4, true], is_holding_point: [4, true], is_parking_spot: [4, true], spawn_robot_name: [1, tinyRobot1], spawn_robot_type: [1, TinyRobot]}]
+      - [1391.3610000000001, 703.428, 0, tinyRobot2_charger, {is_charger: [4, true], is_holding_point: [4, true], is_parking_spot: [4, true], spawn_robot_name: [1, tinyRobot2], spawn_robot_type: [1, TinyRobot]}]
+      - [1392.2170000000001, 789.15099999999995, 0, tinyRobot3_charger, {is_charger: [4, true], is_holding_point: [4, true], is_parking_spot: [4, true], spawn_robot_name: [1, tinyRobot3], spawn_robot_type: [1, TinyRobot]}]
+      - [1799.316, 916.55100000000004, 0, starting_station]
+      - [1245.1500000000001, 896.21799999999996, 0, ""]
+      - [1526.54, 1032.712, 0, ""]
+      - [1388.5999999999999, 895.01400000000001, 0, ""]
+      - [1247.123, 799.36300000000006, 0, ""]
+      - [1330.164, 780.15800000000002, 0, ""]
+      - [1873.0239999999999, 915, 0, ""]
+      - [1224.6610000000001, 955.52599999999995, 0, ""]
+      - [1263.4949999999999, 955.47199999999998, 0, ""]
+      - [1839.741, 954.99199999999996, 0, ""]
+      - [1902.0129999999999, 955.01599999999996, 0, ""]
+      - [1723.328, 914.48199999999997, 0, solid_dispensing]
+      - [1627.0599999999999, 914.87900000000002, 0, liquid_dispensing]
+      - [1624.2750000000001, 850.03800000000001, 0, magnetic_stirring]
+      - [1623.0820000000001, 781.21799999999996, 0, ultrasonic_cleaner]
+      - [1622.684, 721.94500000000005, 0, furnace_workstation]
+      - [1621.8879999999999, 671.02599999999995, 0, spotting_workstation]
+      - [1708.8019999999999, 665.88, 0, confecting_workstation]
+      - [1872.6600000000001, 830.70299999999997, 0, ""]
+      - [1871.8869999999999, 761.56799999999998, 0, ""]
+      - [1873.432, 667.32899999999995, 0, ""]
+      - [1787.3030000000001, 664.23900000000003, 0, ""]
+      - [1817.0840000000001, 1034.761, 0, ""]
+      - [1871.0820000000001, 1007.761, 0, ""]
+      - [1870.7070000000001, 1065.51, 0, ""]
+      - [1918.7059999999999, 1035.51, 0, ""]
+      - [1244.9010000000001, 998.94600000000003, 0, ""]
+      - [1199.7660000000001, 1028.528, 0, ""]
+      - [1244.2909999999999, 1059.634, 0, ""]
+      - [1290.646, 1027.9179999999999, 0, ""]
     walls:
-      - [7, 8, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, default], texture_scale: [3, 1], texture_width: [3, 1]}]
-      - [8, 12, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, default], texture_scale: [3, 1], texture_width: [3, 1]}]
+      - [4, 5, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, default], texture_scale: [3, 1], texture_width: [3, 1]}]
+      - [5, 6, {alpha: [3, 1], texture_height: [3, 2.5], texture_name: [1, default], texture_scale: [3, 1], texture_width: [3, 1]}]
 lifts: {}
 name: building
